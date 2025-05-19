@@ -1,0 +1,9 @@
+# Request
+bool lock  # True for lock, False for unlock
+---
+# Result
+string result
+---
+# Feedback
+string status
+float32 percent_complete

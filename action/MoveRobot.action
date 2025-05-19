@@ -1,0 +1,8 @@
+# Request
+bool move    # ture for move and false for stop moving
+---
+# Result
+string result
+---
+# Feedback
+float32 distance_remain
