@@ -43,9 +43,14 @@
             </plane>
           </geometry>
           <material>
-            <ambient>0.800000012 0.800000012 0.800000012 1</ambient>
+            <!-- <ambient>0.800000012 0.800000012 0.800000012 1</ambient>
             <diffuse>0.800000012 0.800000012 0.800000012 1</diffuse>
             <specular>0.800000012 0.800000012 0.800000012 1</specular>
+          </material> -->
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Wood</name>
+            </script>
           </material>
         </visual>
         <pose>0 0 0 0 0 0</pose>

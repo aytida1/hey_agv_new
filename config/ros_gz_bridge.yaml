@@ -27,6 +27,19 @@
   gz_type_name: "gz.msgs.LaserScan"
   direction: GZ_TO_ROS
 
+- ros_topic_name: "/camera_topic"
+  gz_topic_name: "/world/empty/model/agv/link/base_link/sensor/camera/image"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+
+
+- ros_topic_name: "/camera_info"
+  gz_topic_name: "/world/empty/model/agv/link/base_link/sensor/camera/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+
 # Lidar 2 scan (Gazebo → ROS)
 - ros_topic_name: "/scan2"
   gz_topic_name: "/lidar2"

@@ -251,6 +251,32 @@
     </joint>
 
 
+
+    <link name="agv/base_link/camera">
+        <visual>
+            <geometry>
+                <box size="0.01 0.06 0.02" />
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <material name="white" />
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.01 0.06 0.02" />
+            </geometry>
+             <origin xyz="0 0 0" rpy="0 0 0" />
+        </collision>
+        <xacro:box_inertia m="0.03" l="0.02" w="0.06" h="0.02" xyz="0 0 0" rpy="0 0 0" />
+    </link>
+
+
+    <joint name="camera_base_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="agv/base_link/camera" />
+        <origin xyz="0.237 0 0.03" rpy="0 -0.1 0"/>
+    </joint>
+
+
     <gazebo reference="base_link">
         <material>Gazebo/DarkGrey</material>
     </gazebo>
@@ -302,6 +328,26 @@
         <material>Gazebo/Red</material>
         <mu1>0.5</mu1>
         <mu2>0.5</mu2>
+    </gazebo>
+
+
+    <gazebo reference="agv/base_link/camera">
+        <sensor type="camera" name="camera">
+          <camera>
+            <horizontal_fov>1.047</horizontal_fov>
+            <image>
+              <width>320</width>
+              <height>240</height>
+            </image>
+            <clip>
+              <near>0.01</near>
+              <far>50</far>
+            </clip>
+          </camera>
+          <always_on>1</always_on>
+          <update_rate>30</update_rate>
+          <visualize>true</visualize>
+        </sensor>
     </gazebo>
 
     <gazebo reference="agv/base_link/gpu_lidar_right">
