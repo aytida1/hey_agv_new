@@ -76,14 +76,14 @@
         <visual name='visual'>
           <geometry>
             <mesh>
-              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
+              <uri>file:///home/adi/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
             </mesh>
           </geometry>
         </visual>
         <collision name='collision'>
           <geometry>
             <mesh>
-              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
+              <uri>file:///home/adi/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
             </mesh>
           </geometry>
         </collision>
