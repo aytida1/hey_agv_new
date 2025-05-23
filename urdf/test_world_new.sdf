@@ -76,14 +76,14 @@
         <visual name='visual'>
           <geometry>
             <mesh>
-              <uri>file:///home/adi/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
             </mesh>
           </geometry>
         </visual>
         <collision name='collision'>
           <geometry>
             <mesh>
-              <uri>file:///home/adi/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
             </mesh>
           </geometry>
         </collision>
@@ -103,7 +103,42 @@
         <enable_wind>false</enable_wind>
       </link>
       <pose>2.404789924621582 3.8794399725918596 0.12896499231933753 1.3941895961122083e-08 -3.3141494098488552e-18 3.2909053232703221e-19</pose>
-      <static>false</static>
+      <static>true</static>
+      <self_collide>false</self_collide>
+    </model>
+    <model name='apriltag'>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <pose>0 0 0 0 0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
+      <pose>1.97 3.82 0.07 3.14 0 0</pose>
+      <static>true</static>
       <self_collide>false</self_collide>
     </model>
     <!-- <model name="apriltag_marker">
