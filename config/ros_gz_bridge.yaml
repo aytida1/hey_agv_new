@@ -47,6 +47,20 @@
   gz_type_name: "gz.msgs.LaserScan"
   direction: GZ_TO_ROS
 
+# Lift controller (ROS -> GAZEBO)
+- ros_topic_name: "/lift_cmd"
+  gz_topic_name: "/lift_cmd"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+
+# Lift SERVO controller (ROS -> GAZEBO)
+- ros_topic_name: "/lift_servo_cmd"
+  gz_topic_name: "/lift_servo_cmd"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+
 # Clock (Gazebo → ROS)
 - ros_topic_name: "/clock"
   gz_topic_name: "/clock"

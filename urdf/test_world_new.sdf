@@ -76,14 +76,14 @@
         <visual name='visual'>
           <geometry>
             <mesh>
-              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
+              <uri>file:///home/adi/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
             </mesh>
           </geometry>
         </visual>
         <collision name='collision'>
           <geometry>
             <mesh>
-              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
+              <uri>file:///home/adi/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
             </mesh>
           </geometry>
         </collision>
@@ -106,6 +106,27 @@
       <static>false</static>
       <self_collide>false</self_collide>
     </model>
+    <!-- <model name="apriltag_marker">
+      <static>true</static>
+      <link name="tag_link">
+        <visual name="tag_visual">
+          <pose>2 2 1 0 1.57 0</pose>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>0.2 0.2</size> 
+            </plane>
+          </geometry>
+          <material>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <texture>
+              <diffuse>file:///home/adi/car_ws_new/src/hey_agv_new/urdf/size70.png</diffuse>
+            </texture>
+          </material>
+        </visual>
+      </link>
+    </model> -->
     <model name='box'>
       <pose>5.5302627943680154 5.9681636854948756 0.49999999990199806 6.2287739151293738e-22 9.3279666454713669e-22 -3.6315533669320137e-22</pose>
       <link name='box_link'>

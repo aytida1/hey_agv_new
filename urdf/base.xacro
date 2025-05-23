@@ -141,11 +141,13 @@
     <joint name="lift_base_joint" type="prismatic">
         <parent link="base_link" />
         <child link="lift_link" />
-        <origin xyz="0 0 0.187" rpy="0 0 1.5708"/>
-        <limit lower="0" upper="0.2" effort="1000.0" velocity="1.0"/>
+        <origin xyz="0 0 0.177" rpy="0 0 1.5708"/>
+        <limit lower="0" upper="0.06" effort="1000.0" velocity="1.0"/>
         <axis xyz="0 0 1" />
     </joint>
 
+
+    <!-- servo motor right-->
     <link name="lift_servo_motor_right_link">
         <visual>
             <geometry>
@@ -166,14 +168,14 @@
     <joint name="lift_servo_motor_right_joint" type="revolute">
         <parent link="lift_link" />
         <child link="lift_servo_motor_right_link" />
-        <origin xyz="0.07 -0.0525 0.0545" rpy="0 0 0"/>
+        <origin xyz="0.07 -0.0525 0.0567" rpy="0 0 0"/>
         <axis xyz="0 0 1" />
-        <limit lower="-3.14" upper="3.14" effort="1.0" velocity="1.0"/>
+        <limit lower="0.0" upper="1.57" effort="1.0" velocity="1.0"/>
     </joint>
 
 
 
-
+    <!-- servo motor left -->
     <link name="lift_servo_motor_left_link">
         <visual>
             <geometry>
@@ -194,9 +196,9 @@
     <joint name="lift_servo_motor_left_joint" type="revolute">
         <parent link="lift_link" />
         <child link="lift_servo_motor_left_link" />
-        <origin xyz="-0.07 0.0525 0.0545" rpy="0 0 0"/>
+        <origin xyz="-0.07 0.0525 0.0567" rpy="0 0 0"/>
         <axis xyz="0 0 1" />
-        <limit lower="-3.14" upper="3.14" effort="1.0" velocity="1.0"/>
+        <limit lower="0.0" upper="1.57" effort="1.0" velocity="1.0"/>
     </joint>
 
     <!-- Caster wheel macro -->
