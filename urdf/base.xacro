@@ -272,13 +272,22 @@
     </link>
 
 
+    <joint name="camera_base_joint_optical" type="fixed">
+        <parent link="agv/base_link/camera" />
+        <child link="camera_optical_link" />
+        <!-- <origin xyz="0.237 0 0.03" rpy="0 -0.1 0"/>   it was 0.03 -->
+        <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/> 
+    </joint>
+
+    <link name="camera_optical_link" ></link>
+
+    <!-- for optical correctness -->
     <joint name="camera_base_joint" type="fixed">
         <parent link="base_link" />
         <child link="agv/base_link/camera" />
         <!-- <origin xyz="0.237 0 0.03" rpy="0 -0.1 0"/>   it was 0.03 -->
         <origin xyz="0.25 0 0.03" rpy="0 -0.1 0"/> 
     </joint>
-
 
     <gazebo reference="base_link">
         <material>Gazebo/DarkGrey</material>
@@ -350,6 +359,7 @@
           <always_on>1</always_on>
           <update_rate>30</update_rate>
           <visualize>true</visualize>
+          <gz_frame_id>camera_optical_link</gz_frame_id>
         </sensor>
     </gazebo>
 

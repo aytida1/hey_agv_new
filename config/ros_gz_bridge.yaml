@@ -27,7 +27,7 @@
   gz_type_name: "gz.msgs.LaserScan"
   direction: GZ_TO_ROS
 
-- ros_topic_name: "/camera_topic"
+- ros_topic_name: "/image_rect"
   gz_topic_name: "/world/empty/model/agv/link/base_link/sensor/camera/image"
   ros_type_name: "sensor_msgs/msg/Image"
   gz_type_name: "gz.msgs.Image"
