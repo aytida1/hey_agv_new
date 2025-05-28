@@ -16,13 +16,17 @@ find_package(nav_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(action_msgs REQUIRED)
+find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "action/LiftAndLock.action"
   "action/MoveRobot.action"
+  "action/DockRobot.action"
+  DEPENDENCIES action_msgs geometry_msgs builtin_interfaces
 )
 
 add_executable(frame_remapper src/mapper.cpp)
@@ -33,6 +37,9 @@ ament_target_dependencies(scan_merger_v2 rclcpp sensor_msgs geometry_msgs tf2_ro
 
 add_executable(scan_merger src/scan_merger.cpp)
 ament_target_dependencies(scan_merger rclcpp sensor_msgs)
+
+add_executable(tag_transform src/tag_transform.cpp)
+ament_target_dependencies(tag_transform rclcpp geometry_msgs tf2_ros tf2 tf2_geometry_msgs)
 
 
 
@@ -45,6 +52,8 @@ ament_target_dependencies(scan_merger rclcpp sensor_msgs)
 install (
   PROGRAMS
     src/some.py
+    src/dock.py
+    src/tag_publisher.py
     DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -52,6 +61,7 @@ install(TARGETS
   frame_remapper
   scan_merger
   scan_merger_v2
+  tag_transform
   DESTINATION lib/${PROJECT_NAME})
 
 install(

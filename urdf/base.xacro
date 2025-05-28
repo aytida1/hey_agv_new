@@ -295,10 +295,14 @@
 
     <gazebo reference="right_wheel_link">
         <material>Gazebo/Red</material>
+        <mu1>0.98</mu1>
+        <mu2>0.98</mu2>
     </gazebo>
 
     <gazebo reference="left_wheel_link">
         <material>Gazebo/Red</material>
+        <mu1>0.98</mu1>
+        <mu2>0.98</mu2>
     </gazebo>
 
     <gazebo reference="front_right_caster_wheel">
@@ -372,7 +376,7 @@
             <ray>
                 <scan>
                     <horizontal>
-                        <samples>640</samples>
+                        <samples>1800</samples>
                         <resolution>1</resolution>
                         <min_angle>-3.14</min_angle>
                         <max_angle>3.14</max_angle>
@@ -404,7 +408,7 @@
             <ray>
                 <scan>
                     <horizontal>
-                        <samples>640</samples>
+                        <samples>1800</samples>
                         <resolution>1</resolution>
                         <min_angle>-3.14</min_angle>
                         <max_angle>3.14</max_angle>
