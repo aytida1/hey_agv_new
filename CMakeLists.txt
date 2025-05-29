@@ -65,7 +65,7 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME})
 
 install(
-  DIRECTORY src urdf config launch action
+  DIRECTORY src urdf config launch action models
   DESTINATION share/${PROJECT_NAME}
 )
 

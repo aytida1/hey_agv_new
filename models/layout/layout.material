@@ -1,0 +1,14 @@
+material layout
+{
+    receive_shadows off
+    technique
+    {
+        pass
+        {
+            texture_unit
+            {
+                texture layout_cropped.jpg
+            }
+        }
+    }
+}

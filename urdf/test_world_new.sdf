@@ -71,7 +71,39 @@
       <pose>0 0 0 0 0 0</pose>
       <self_collide>false</self_collide>
     </model>
-    <model name='asrs_new'>
+    
+    <!-- Factory Layout Model -->
+    <model name='layout'>
+      <static>1</static>
+      <link name='link'>
+        <visual name='visual'>
+          <cast_shadows>0</cast_shadows>
+          <pose>0 0 0 1.5708 0 0</pose>
+          <geometry>
+             <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/layout.glb</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+     <model name='walls'>
+      <static>1</static>
+      <link name='link'>
+        <visual name='visual'>
+          <cast_shadows>0</cast_shadows>
+          <pose>0 -3.36 0 1.5708 0 3.14</pose>
+          <geometry>
+             <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/wall.glb</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    
+    <model name='asrs_0'>
       <link name='link'>
         <visual name='visual'>
           <geometry>
@@ -102,23 +134,56 @@
         </inertial>
         <enable_wind>false</enable_wind>
       </link>
-      <pose>2.404789924621582 3.8794399725918596 0.12896499231933753 1.3941895961122083e-08 -3.3141494098488552e-18 3.2909053232703221e-19</pose>
-      <static>true</static>
-      <self_collide>false</self_collide>
-    </model>
-    <model name='apriltag'>
-      <link name='link'>
-        <visual name='visual'>
+      
+      <link name='apriltag_link'>
+        <visual name='apriltag_visual'>
           <geometry>
             <mesh>
               <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
             </mesh>
           </geometry>
         </visual>
-        <collision name='collision'>
+        <collision name='apriltag_collision'>
           <geometry>
             <mesh>
               <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <pose>-0.434789924621582 -0.0594399725918596 -0.05896499231933753 3.14 0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>0.1</mass>
+          <inertia>
+            <ixx>0.01</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.01</iyy>
+            <iyz>0</iyz>
+            <izz>0.01</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
+      
+      <pose>1.66 -14.6 0.12896499231933753 1.3941895961122083e-08 -3.3141494098488552e-18 3.2909053232703221e-19</pose>
+      <static>true</static>
+      <self_collide>false</self_collide>
+    </model>
+
+    <model name='asrs_4'>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
             </mesh>
           </geometry>
         </collision>
@@ -137,477 +202,611 @@
         </inertial>
         <enable_wind>false</enable_wind>
       </link>
-      <pose>1.97 3.82 0.07 3.14 0 0</pose>
+      
+      <link name='apriltag_link'>
+        <visual name='apriltag_visual'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='apriltag_collision'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <pose>-0.434789924621582 -0.0594399725918596 -0.05896499231933753 3.14 0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>0.1</mass>
+          <inertia>
+            <ixx>0.01</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.01</iyy>
+            <iyz>0</iyz>
+            <izz>0.01</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
+      
+      <pose>-12.64 -14.6 0.12896499231933753 1.3941895961122083e-08 -3.3141494098488552e-18 3.2909053232703221e-19</pose>
       <static>true</static>
       <self_collide>false</self_collide>
     </model>
-    <!-- <model name="apriltag_marker">
+
+    <model name='asrs_2'>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <pose>0 0 0 0 0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
+      
+      <link name='apriltag_link'>
+        <visual name='apriltag_visual'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='apriltag_collision'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <pose>-0.434789924621582 -0.0594399725918596 -0.05896499231933753 3.14 0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>0.1</mass>
+          <inertia>
+            <ixx>0.01</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.01</iyy>
+            <iyz>0</iyz>
+            <izz>0.01</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
+      
+      <pose>-5.49 -14.6 0.12896499231933753 1.3941895961122083e-08 -3.3141494098488552e-18 3.2909053232703221e-19</pose>
       <static>true</static>
-      <link name="tag_link">
-        <visual name="tag_visual">
-          <pose>2 2 1 0 1.57 0</pose>
+      <self_collide>false</self_collide>
+    </model>
+
+    <model name='asrs_1'>
+      <link name='link'>
+        <visual name='visual'>
           <geometry>
-            <plane>
-              <normal>0 0 1</normal>
-              <size>0.2 0.2</size> 
-            </plane>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
+            </mesh>
           </geometry>
-          <material>
-            <ambient>1 1 1 1</ambient>
-            <diffuse>1 1 1 1</diffuse>
-            <texture>
-              <diffuse>file:///home/adi/car_ws_new/src/hey_agv_new/urdf/size70.png</diffuse>
-            </texture>
-          </material>
         </visual>
-      </link>
-    </model> -->
-    <model name='box'>
-      <pose>5.5302627943680154 5.9681636854948756 0.49999999990199806 6.2287739151293738e-22 9.3279666454713669e-22 -3.6315533669320137e-22</pose>
-      <link name='box_link'>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <pose>0 0 0 0 0 0</pose>
         <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>1</mass>
           <inertia>
-            <ixx>0.16666</ixx>
+            <ixx>1</ixx>
             <ixy>0</ixy>
             <ixz>0</ixz>
-            <iyy>0.16666</iyy>
+            <iyy>1</iyy>
             <iyz>0</iyz>
-            <izz>0.16666</izz>
+            <izz>1</izz>
           </inertia>
-          <mass>1</mass>
-          <pose>0 0 0 0 0 0</pose>
         </inertial>
-        <collision name='box_collision'>
-          <geometry>
-            <box>
-              <size>1 1 1</size>
-            </box>
-          </geometry>
-          <surface>
-            <friction>
-              <ode/>
-            </friction>
-            <bounce/>
-            <contact/>
-          </surface>
-        </collision>
-        <visual name='box_visual'>
-          <geometry>
-            <box>
-              <size>1 1 1</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.300000012 0.300000012 0.300000012 1</ambient>
-            <diffuse>0.699999988 0.699999988 0.699999988 1</diffuse>
-            <specular>1 1 1 1</specular>
-          </material>
-        </visual>
-        <pose>0 0 0 0 0 0</pose>
         <enable_wind>false</enable_wind>
       </link>
-      <static>false</static>
-      <self_collide>false</self_collide>
-    </model>
-    <model name='box_0'>
-      <pose>5.5241099845846513 4.9665277414877114 0.49999999019962649 -7.8599832340965207e-09 2.2705552104490281e-13 -1.087468040024227e-09</pose>
-      <link name='box_link'>
+      
+      <link name='apriltag_link'>
+        <visual name='apriltag_visual'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='apriltag_collision'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <pose>-0.434789924621582 -0.0594399725918596 -0.05896499231933753 3.14 0 0</pose>
         <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>0.1</mass>
           <inertia>
-            <ixx>0.16666</ixx>
+            <ixx>0.01</ixx>
             <ixy>0</ixy>
             <ixz>0</ixz>
-            <iyy>0.16666</iyy>
+            <iyy>0.01</iyy>
             <iyz>0</iyz>
-            <izz>0.16666</izz>
+            <izz>0.01</izz>
           </inertia>
-          <mass>1</mass>
-          <pose>0 0 0 0 0 0</pose>
         </inertial>
-        <collision name='box_collision'>
-          <geometry>
-            <box>
-              <size>1 1 1</size>
-            </box>
-          </geometry>
-          <surface>
-            <friction>
-              <ode/>
-            </friction>
-            <bounce/>
-            <contact/>
-          </surface>
-        </collision>
-        <visual name='box_visual'>
-          <geometry>
-            <box>
-              <size>1 1 1</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.300000012 0.300000012 0.300000012 1</ambient>
-            <diffuse>0.699999988 0.699999988 0.699999988 1</diffuse>
-            <specular>1 1 1 1</specular>
-          </material>
-        </visual>
-        <pose>0 0 0 0 0 0</pose>
         <enable_wind>false</enable_wind>
       </link>
-      <static>false</static>
+      
+      <pose>5.02 -14.6 0.12896499231933753 1.3941895961122083e-08 -3.3141494098488552e-18 3.2909053232703221e-19</pose>
+      <static>true</static>
       <self_collide>false</self_collide>
     </model>
-    <model name='box_0_1'>
-      <pose>5.5111051877131407 3.9665285616313901 0.49999999990533067 5.4963966105279224e-11 -2.5272262332848115e-13 -7.0649464749928469e-13</pose>
-      <link name='box_link'>
+
+     <model name='asrs_3'>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <pose>0 0 0 0 0 0</pose>
         <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>1</mass>
           <inertia>
-            <ixx>0.16666</ixx>
+            <ixx>1</ixx>
             <ixy>0</ixy>
             <ixz>0</ixz>
-            <iyy>0.16666</iyy>
+            <iyy>1</iyy>
             <iyz>0</iyz>
-            <izz>0.16666</izz>
+            <izz>1</izz>
           </inertia>
-          <mass>1</mass>
         </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
+      
+      <link name='apriltag_link'>
+        <visual name='apriltag_visual'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='apriltag_collision'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <pose>-0.434789924621582 -0.0594399725918596 -0.05896499231933753 3.14 0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>0.1</mass>
+          <inertia>
+            <ixx>0.01</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.01</iyy>
+            <iyz>0</iyz>
+            <izz>0.01</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
+      
+      <pose>-2.13 -14.6 0.12896499231933753 1.3941895961122083e-08 -3.3141494098488552e-18 3.2909053232703221e-19</pose>
+      <static>true</static>
+      <self_collide>false</self_collide>
+    </model>
+
+     <model name='asrs_5'>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/asrs_new_apriltag.gltf</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <pose>0 0 0 0 0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
+      
+      <link name='apriltag_link'>
+        <visual name='apriltag_visual'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='apriltag_collision'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <pose>-0.434789924621582 -0.0594399725918596 -0.05896499231933753 3.14 0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>0.1</mass>
+          <inertia>
+            <ixx>0.01</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.01</iyy>
+            <iyz>0</iyz>
+            <izz>0.01</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
+      
+      <pose>-9.28 -14.6 0.12896499231933753 1.3941895961122083e-08 -3.3141494098488552e-18 3.2909053232703221e-19</pose>
+      <static>true</static>
+      <self_collide>false</self_collide>
+    </model>
+
+    <model name='systembox_right_0'>
+      <pose>5.14 -12.2 0.49999933294646554 0 0 0</pose>
+      <link name='box_link'>
         <collision name='box_collision'>
           <geometry>
             <box>
-              <size>1 1 1</size>
+              <size>2.363 4.171 1</size>
             </box>
           </geometry>
-          <surface>
-            <friction>
-              <ode/>
-            </friction>
-            <bounce/>
-            <contact/>
-          </surface>
         </collision>
         <visual name='box_visual'>
           <geometry>
             <box>
-              <size>1 1 1</size>
+             <size>2.363 4.171 1</size>
             </box>
           </geometry>
-          <material>
-            <ambient>0.300000012 0.300000012 0.300000012 1</ambient>
-            <diffuse>0.699999988 0.699999988 0.699999988 1</diffuse>
-            <specular>1 1 1 1</specular>
-          </material>
         </visual>
       </link>
-      <static>false</static>
+      <static>true</static>
       <self_collide>false</self_collide>
     </model>
-    <model name='box_0_2'>
-      <pose>5.4965631846929037 2.9665292936967664 0.49999997937745216 2.9936423808836476e-08 -6.3098519221897861e-12 -2.3452922220623968e-09</pose>
+
+       <model name='systembox_mid_0'>
+      <pose>3.29 -11.19 0.49999933294646554 0 0 0</pose>
       <link name='box_link'>
-        <inertial>
-          <inertia>
-            <ixx>0.16666</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.16666</iyy>
-            <iyz>0</iyz>
-            <izz>0.16666</izz>
-          </inertia>
-          <mass>1</mass>
-        </inertial>
         <collision name='box_collision'>
           <geometry>
             <box>
-              <size>1 1 1</size>
+              <size>1.3 2.1 1</size>
             </box>
           </geometry>
-          <surface>
-            <friction>
-              <ode/>
-            </friction>
-            <bounce/>
-            <contact/>
-          </surface>
         </collision>
         <visual name='box_visual'>
           <geometry>
             <box>
-              <size>1 1 1</size>
+             <size>1.3 2.1 1</size>
             </box>
           </geometry>
-          <material>
-            <ambient>0.300000012 0.300000012 0.300000012 1</ambient>
-            <diffuse>0.699999988 0.699999988 0.699999988 1</diffuse>
-            <specular>1 1 1 1</specular>
-          </material>
         </visual>
       </link>
-      <static>false</static>
+      <static>true</static>
       <self_collide>false</self_collide>
     </model>
-    <model name='box_0_3'>
-      <pose>5.4969215385194596 1.9665293906660097 0.49999999030888653 9.3051729080101508e-09 -4.0386613469774874e-11 -2.9152124904652751e-09</pose>
+
+       <model name='systembox_left_0'>
+      <pose>1.49 -12.2 0.49999933294646554 0 0 0</pose>
       <link name='box_link'>
-        <inertial>
-          <inertia>
-            <ixx>0.16666</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.16666</iyy>
-            <iyz>0</iyz>
-            <izz>0.16666</izz>
-          </inertia>
-          <mass>1</mass>
-        </inertial>
         <collision name='box_collision'>
           <geometry>
             <box>
-              <size>1 1 1</size>
+              <size>2.363 4.171 1</size>
             </box>
           </geometry>
-          <surface>
-            <friction>
-              <ode/>
-            </friction>
-            <bounce/>
-            <contact/>
-          </surface>
         </collision>
         <visual name='box_visual'>
           <geometry>
             <box>
-              <size>1 1 1</size>
+             <size>2.363 4.171 1</size>
             </box>
           </geometry>
-          <material>
-            <ambient>0.300000012 0.300000012 0.300000012 1</ambient>
-            <diffuse>0.699999988 0.699999988 0.699999988 1</diffuse>
-            <specular>1 1 1 1</specular>
-          </material>
         </visual>
       </link>
-      <static>false</static>
+      <static>true</static>
       <self_collide>false</self_collide>
     </model>
-    <model name='box_0_4'>
-      <pose>5.5062240124478112 -3.8139271795269729 0.49999933294646554 1.3165947592467752e-06 2.2705600183701247e-13 -1.0874700029833741e-09</pose>
+
+    <model name='systembox_junction_0'>
+      <pose>-0.25 -11.19 0.49999933294646554 0 0 0</pose>
       <link name='box_link'>
-        <inertial>
-          <inertia>
-            <ixx>0.16666</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.16666</iyy>
-            <iyz>0</iyz>
-            <izz>0.16666</izz>
-          </inertia>
-          <mass>1</mass>
-        </inertial>
         <collision name='box_collision'>
           <geometry>
             <box>
-              <size>1 1 1</size>
+              <size>1.3 2.1 1</size>
             </box>
           </geometry>
-          <surface>
-            <friction>
-              <ode/>
-            </friction>
-            <bounce/>
-            <contact/>
-          </surface>
         </collision>
         <visual name='box_visual'>
           <geometry>
             <box>
-              <size>1 1 1</size>
+             <size>1.3 2.1 1</size>
             </box>
           </geometry>
-          <material>
-            <ambient>0.300000012 0.300000012 0.300000012 1</ambient>
-            <diffuse>0.699999988 0.699999988 0.699999988 1</diffuse>
-            <specular>1 1 1 1</specular>
-          </material>
         </visual>
       </link>
-      <static>false</static>
+      <static>true</static>
       <self_collide>false</self_collide>
     </model>
-    <model name='box_0_5'>
-      <pose>1.7134919237365578 -3.8749190824982667 0.49999933294646554 1.3165947592467233e-06 2.2705602812187709e-13 -1.0874700029788151e-09</pose>
+
+    <!-- System 1 (moving in negative X) -->
+    <model name='systembox_right_1'>
+      <pose>-1.97 -12.2 0.49999933294646554 0 0 0</pose>
       <link name='box_link'>
-        <inertial>
-          <inertia>
-            <ixx>0.16666</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.16666</iyy>
-            <iyz>0</iyz>
-            <izz>0.16666</izz>
-          </inertia>
-          <mass>1</mass>
-        </inertial>
         <collision name='box_collision'>
           <geometry>
             <box>
-              <size>1 1 1</size>
+              <size>2.363 4.171 1</size>
             </box>
           </geometry>
-          <surface>
-            <friction>
-              <ode/>
-            </friction>
-            <bounce/>
-            <contact/>
-          </surface>
         </collision>
         <visual name='box_visual'>
           <geometry>
             <box>
-              <size>1 1 1</size>
+             <size>2.363 4.171 1</size>
             </box>
           </geometry>
-          <material>
-            <ambient>0.300000012 0.300000012 0.300000012 1</ambient>
-            <diffuse>0.699999988 0.699999988 0.699999988 1</diffuse>
-            <specular>1 1 1 1</specular>
-          </material>
         </visual>
       </link>
-      <static>false</static>
+      <static>true</static>
       <self_collide>false</self_collide>
     </model>
-    <model name='box_0_6'>
-      <pose>-3.1860408979388137 -4.0924093224211813 0.49999933294646554 1.3165947592467673e-06 2.2705613077186793e-13 -1.0874700029852146e-09</pose>
+
+    <model name='systembox_mid_1'>
+      <pose>-3.7 -11.19 0.49999933294646554 0 0 0</pose>
       <link name='box_link'>
-        <inertial>
-          <inertia>
-            <ixx>0.16666</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.16666</iyy>
-            <iyz>0</iyz>
-            <izz>0.16666</izz>
-          </inertia>
-          <mass>1</mass>
-        </inertial>
         <collision name='box_collision'>
           <geometry>
             <box>
-              <size>1 1 1</size>
+              <size>1.3 2.1 1</size>
             </box>
           </geometry>
-          <surface>
-            <friction>
-              <ode/>
-            </friction>
-            <bounce/>
-            <contact/>
-          </surface>
         </collision>
         <visual name='box_visual'>
           <geometry>
             <box>
-              <size>1 1 1</size>
+             <size>1.3 2.1 1</size>
             </box>
           </geometry>
-          <material>
-            <ambient>0.300000012 0.300000012 0.300000012 1</ambient>
-            <diffuse>0.699999988 0.699999988 0.699999988 1</diffuse>
-            <specular>1 1 1 1</specular>
-          </material>
         </visual>
       </link>
-      <static>false</static>
+      <static>true</static>
       <self_collide>false</self_collide>
     </model>
-    <model name='box_0_7'>
-      <pose>-3.077974018999714 5.3841034883791767 0.49999933294646554 1.3165947592466672e-06 2.2705597444931793e-13 -1.0874700029848256e-09</pose>
+
+    <model name='systembox_left_1'>
+      <pose>-5.52 -12.2 0.49999933294646554 0 0 0</pose>
       <link name='box_link'>
-        <inertial>
-          <inertia>
-            <ixx>0.16666</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.16666</iyy>
-            <iyz>0</iyz>
-            <izz>0.16666</izz>
-          </inertia>
-          <mass>1</mass>
-        </inertial>
         <collision name='box_collision'>
           <geometry>
             <box>
-              <size>1 1 1</size>
+              <size>2.363 4.171 1</size>
             </box>
           </geometry>
-          <surface>
-            <friction>
-              <ode/>
-            </friction>
-            <bounce/>
-            <contact/>
-          </surface>
         </collision>
         <visual name='box_visual'>
           <geometry>
             <box>
-              <size>1 1 1</size>
+             <size>2.363 4.171 1</size>
             </box>
           </geometry>
-          <material>
-            <ambient>0.300000012 0.300000012 0.300000012 1</ambient>
-            <diffuse>0.699999988 0.699999988 0.699999988 1</diffuse>
-            <specular>1 1 1 1</specular>
-          </material>
         </visual>
       </link>
-      <static>false</static>
+      <static>true</static>
       <self_collide>false</self_collide>
     </model>
-    <model name='box_0_8'>
-      <pose>-4.94757655341005 0.42315788066466703 0.49999933294646554 1.3165947592468021e-06 2.270560519934706e-13 -1.0874700029736053e-09</pose>
+
+    <model name='systembox_junction_1'>
+      <pose>-7.35 -11.19 0.49999933294646554 0 0 0</pose>
       <link name='box_link'>
-        <inertial>
-          <inertia>
-            <ixx>0.16666</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.16666</iyy>
-            <iyz>0</iyz>
-            <izz>0.16666</izz>
-          </inertia>
-          <mass>1</mass>
-        </inertial>
         <collision name='box_collision'>
           <geometry>
             <box>
-              <size>1 1 1</size>
+             <size>1.3 2.1 1</size>
             </box>
           </geometry>
-          <surface>
-            <friction>
-              <ode/>
-            </friction>
-            <bounce/>
-            <contact/>
-          </surface>
         </collision>
         <visual name='box_visual'>
           <geometry>
             <box>
-              <size>1 1 1</size>
+            <size>1.3 2.1 1</size>
             </box>
           </geometry>
-          <material>
-            <ambient>0.300000012 0.300000012 0.300000012 1</ambient>
-            <diffuse>0.699999988 0.699999988 0.699999988 1</diffuse>
-            <specular>1 1 1 1</specular>
-          </material>
         </visual>
       </link>
-      <static>false</static>
+      <static>true</static>
       <self_collide>false</self_collide>
     </model>
+
+    <!-- System 2 (moving further in negative X) -->
+    <model name='systembox_right_2'>
+      <pose>-9.11 -12.2 0.49999933294646554 0 0 0</pose>
+      <link name='box_link'>
+        <collision name='box_collision'>
+          <geometry>
+            <box>
+              <size>2.363 4.171 1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name='box_visual'>
+          <geometry>
+            <box>
+             <size>2.363 4.171 1</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <static>true</static>
+      <self_collide>false</self_collide>
+    </model>
+
+    <model name='systembox_mid_2'>
+      <pose>-10.94 -11.19 0.49999933294646554 0 0 0</pose>
+      <link name='box_link'>
+        <collision name='box_collision'>
+          <geometry>
+            <box>
+              <size>1.3 2.1 1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name='box_visual'>
+          <geometry>
+            <box>
+             <size>1.3 2.1 1</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <static>true</static>
+      <self_collide>false</self_collide>
+    </model>
+
+    <model name='systembox_left_2'>
+      <pose>-12.78 -12.2 0.49999933294646554 0 0 0</pose>
+      <link name='box_link'>
+        <collision name='box_collision'>
+          <geometry>
+            <box>
+              <size>2.363 4.171 1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name='box_visual'>
+          <geometry>
+            <box>
+             <size>2.363 4.171 1</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <static>true</static>
+      <self_collide>false</self_collide>
+    </model>
+
+
+
+    <!-- PSR -->
+
+    <include>
+            <name>psr_09</name>
+            <pose>-1.69 -15.25 1.03 0 0 1.57</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/psr.sdf</uri>
+    </include>
+
+    <include>
+            <name>psr_10</name>
+            <pose>-1.98 -15.25 1.03 0 0 1.57</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/psr.sdf</uri>
+    </include>
+
+    <include>
+            <name>psr_11</name>
+            <pose>-2.27 -15.25 1.03 0 0 1.57</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/psr.sdf</uri>
+    </include>
+
+    <include>
+            <name>psr_12</name>
+            <pose>-2.56 -15.25 1.03 0 0 1.57</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/psr.sdf</uri>
+    </include>
+
+     <include>
+            <name>table_1</name>
+            <pose>9.91 -9.38 0 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/table.sdf</uri>
+    </include>
+
+    <include>
+            <name>table_2</name>
+            <pose>9.91 -11.33 0 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/table.sdf</uri>
+    </include>
+
+    <include>
+            <name>table_3</name>
+            <pose>9.91 -13.29 0 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/table.sdf</uri>
+    </include>
+
+    <include>
+            <name>table_4</name>
+            <pose>9.91 -15.17 0 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/table.sdf</uri>
+    </include>
+   
     <light name='sun' type='directional'>
       <pose>0 0 10 0 0 0</pose>
       <cast_shadows>true</cast_shadows>

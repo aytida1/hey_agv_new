@@ -20,13 +20,13 @@ public:
         
         // Create timer to periodically publish transform
         timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(100),
+            std::chrono::milliseconds(30),
             std::bind(&TagTransformNode::publish_transform, this));
         
         // Parameters for frame names
         this->declare_parameter("base_frame", "map");
         this->declare_parameter("tag_frame", "tag36h11:0");
-        this->declare_parameter("publish_rate", 10.0);
+        this->declare_parameter("publish_rate", 30.0);
         
         base_frame_ = this->get_parameter("base_frame").as_string();
         tag_frame_ = this->get_parameter("tag_frame").as_string();

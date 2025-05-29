@@ -1,0 +1,53 @@
+<?xml version="1.0" ?>
+<sdf version="1.8">
+  <model name="psr" canonical_link="psr_link">
+    <static>false</static>
+    <link name="psr_link">
+      <pose>0.1435 0 0 1.5708 0 -1.5708</pose>
+
+        <inertial>
+            <mass>16.0</mass>
+            <inertia>
+            <ixx>4.2</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.2</iyy>
+            <iyz>0</iyz>
+            <izz>4.24</izz>
+            </inertia>
+        </inertial>
+      <!-- Visual representation using your DAE file -->
+      <visual name="visual">
+       <pose>0 0 -0.1435 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>file:///home/meditab/Desktop/agv_ws/src/hey_agv/urdf/PSR_Mock_psr.dae</uri>
+            <scale>1 1 1</scale>
+          </mesh>
+        </geometry>
+      </visual>
+      
+      <!-- Collision geometry - enabled for static model -->
+      <collision name="collision">
+        <pose>0 0 -0.1435 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>file:///home/meditab/Desktop/agv_ws/src/hey_agv/urdf/PSR_Mock_psr.dae</uri>
+            <scale>1 1 1</scale>
+          </mesh>
+        </geometry>
+        <surface>
+          <contact>
+            <collide_bitmask>0x01</collide_bitmask>
+          </contact>
+          <friction>
+            <ode>
+              <mu>0.8</mu>
+              <mu2>0.8</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+    </link>
+  </model>
+</sdf>

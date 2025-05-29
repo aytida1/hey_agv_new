@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<sdf version="1.8">
+<model name="layout">
+  <static>true</static>
+    <link name="link">
+      <collision name="collision">
+        <geometry>
+          <plane>
+            <normal>0 0 1</normal>
+            <size> 15 15</size>
+          </plane>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>100</mu>
+              <mu2>100</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name="visual">
+        <cast_shadows>false</cast_shadows>
+        <pose>0 0 0 </pose>
+        <geometry>
+          <plane>
+            <normal>0 0 1</normal>
+            <size>5 5</size>
+          </plane>
+        </geometry>
+        <material>
+          <script>
+            <uri>/home/meditab/car_ws_new/src/hey_agv_new/models/layout/layout.material</uri>
+            <uri>/home/meditab/car_ws_new/src/hey_agv_new/models/layout/layout_cropped.jpg</uri>
+            <name>track</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

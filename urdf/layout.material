@@ -1,0 +1,12 @@
+material layout{
+    technique
+    {
+        pass
+        {
+            texture_unit
+            {
+                texture layout_cropped.jpg
+            }
+        }   
+    }
+}
