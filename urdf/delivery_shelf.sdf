@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<sdf version="1.7">
+  <model name="delivery_shelf">
+    <static>true</static>
+    <link name="shelf_link">
+      <pose>0 0 1 0 0 0</pose>
+      <collision name="shelf_collision">
+        <geometry>
+          <box>
+            <size>3.81 0.6096 2.0</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="shelf_visual">
+        <geometry>
+          <box>
+            <size>3.81 0.6096 2.0</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.6 0.4 0.8 1</ambient>
+          <diffuse>0.7 0.5 0.9 1</diffuse>
+          <specular>0.3 0.2 0.4 1</specular>
+        </material>
+      </visual>
+      <inertial>
+        <mass>80</mass>
+        <inertia>
+          <ixx>27.12</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>98.46</iyy>
+          <iyz>0</iyz>
+          <izz>124.89</izz>
+        </inertia>
+      </inertial>
+    </link>
+  </model>
+</sdf>

@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<sdf version="1.7">
+  <model name="technical_desk">
+    <static>true</static>
+    <link name="desk_link">
+      <pose>0 0 0.5 0 0 0</pose>
+      <collision name="desk_collision">
+        <geometry>
+          <box>
+            <size>2.4384 1.2192 1.0</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="desk_visual">
+        <geometry>
+          <box>
+            <size>2.4384 1.2192 1.0</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.4 0.2 0.1 1</ambient>
+          <diffuse>0.6 0.3 0.15 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+        </material>
+      </visual>
+      <inertial>
+        <mass>50</mass>
+        <inertia>
+          <ixx>5.76</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>24.93</iyy>
+          <iyz>0</iyz>
+          <izz>30.56</izz>
+        </inertia>
+      </inertial>
+    </link>
+  </model>
+</sdf>

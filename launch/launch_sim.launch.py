@@ -63,8 +63,8 @@ def generate_launch_description():
         arguments=[
             '-name', 'agv',
             '-topic', '/robot_description',
-            '-x', '0',
-            '-y', '0',
+            '-x', '-3.9',
+            '-y', '-15.9',
             '-z', '0.1'  # Slightly above ground to prevent initial collision
         ],
         output='screen'

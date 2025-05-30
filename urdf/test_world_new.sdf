@@ -89,7 +89,7 @@
     </model>
 
      <model name='walls'>
-      <static>1</static>
+      <static>true</static>
       <link name='link'>
         <visual name='visual'>
           <cast_shadows>0</cast_shadows>
@@ -100,6 +100,14 @@
             </mesh>
           </geometry>
         </visual>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/wall.glb</uri>
+            </mesh>
+          </geometry>
+           <pose>0 -3.36 0 1.5708 0 3.14</pose>
+        </collision>
       </link>
     </model>
     
@@ -135,35 +143,76 @@
         <enable_wind>false</enable_wind>
       </link>
       
-      <link name='apriltag_link'>
+      <link name='apriltag0_link'>
         <visual name='apriltag_visual'>
           <geometry>
             <mesh>
-              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag0.glb</uri>
             </mesh>
           </geometry>
         </visual>
         <collision name='apriltag_collision'>
           <geometry>
             <mesh>
-              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag0.glb</uri>
             </mesh>
           </geometry>
         </collision>
         <pose>-0.434789924621582 -0.0594399725918596 -0.05896499231933753 3.14 0 0</pose>
-        <inertial>
-          <pose>0 0 0 0 0 0</pose>
-          <mass>0.1</mass>
-          <inertia>
-            <ixx>0.01</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.01</iyy>
-            <iyz>0</iyz>
-            <izz>0.01</izz>
-          </inertia>
-        </inertial>
-        <enable_wind>false</enable_wind>
+      </link>
+
+      <link name='apriltag1_link'>
+        <visual name='apriltag_visual'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag1.glb</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='apriltag_collision'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag1.glb</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <pose>-0.1447899246 -0.0594399725918596 -0.05896499231933753 3.14 0 0</pose>
+      </link>
+
+      <link name='apriltag2_link'>
+        <visual name='apriltag_visual'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag2.glb</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='apriltag_collision'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag2.glb</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <pose>0.1452100754 -0.0594399725918596 -0.05896499231933753 3.14 0 0</pose>
+      </link>
+
+      <link name='apriltag3_link'>
+        <visual name='apriltag_visual'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag3.glb</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='apriltag_collision'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag3.glb</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <pose>0.4352100754 -0.0594399725918596 -0.05896499231933753 3.14 0 0</pose>
       </link>
       
       <pose>1.66 -14.6 0.12896499231933753 1.3941895961122083e-08 -3.3141494098488552e-18 3.2909053232703221e-19</pose>
@@ -207,14 +256,14 @@
         <visual name='apriltag_visual'>
           <geometry>
             <mesh>
-              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag0.glb</uri>
             </mesh>
           </geometry>
         </visual>
         <collision name='apriltag_collision'>
           <geometry>
             <mesh>
-              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag0.glb</uri>
             </mesh>
           </geometry>
         </collision>
@@ -275,14 +324,14 @@
         <visual name='apriltag_visual'>
           <geometry>
             <mesh>
-              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag0.glb</uri>
             </mesh>
           </geometry>
         </visual>
         <collision name='apriltag_collision'>
           <geometry>
             <mesh>
-              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag0.glb</uri>
             </mesh>
           </geometry>
         </collision>
@@ -343,14 +392,14 @@
         <visual name='apriltag_visual'>
           <geometry>
             <mesh>
-              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag0.glb</uri>
             </mesh>
           </geometry>
         </visual>
         <collision name='apriltag_collision'>
           <geometry>
             <mesh>
-              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag0.glb</uri>
             </mesh>
           </geometry>
         </collision>
@@ -407,35 +456,76 @@
         <enable_wind>false</enable_wind>
       </link>
       
-      <link name='apriltag_link'>
+       <link name='apriltag0_link'>
         <visual name='apriltag_visual'>
           <geometry>
             <mesh>
-              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag0.glb</uri>
             </mesh>
           </geometry>
         </visual>
         <collision name='apriltag_collision'>
           <geometry>
             <mesh>
-              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag0.glb</uri>
             </mesh>
           </geometry>
         </collision>
         <pose>-0.434789924621582 -0.0594399725918596 -0.05896499231933753 3.14 0 0</pose>
-        <inertial>
-          <pose>0 0 0 0 0 0</pose>
-          <mass>0.1</mass>
-          <inertia>
-            <ixx>0.01</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.01</iyy>
-            <iyz>0</iyz>
-            <izz>0.01</izz>
-          </inertia>
-        </inertial>
-        <enable_wind>false</enable_wind>
+      </link>
+
+      <link name='apriltag1_link'>
+        <visual name='apriltag_visual'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag1.glb</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='apriltag_collision'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag1.glb</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <pose>-0.1447899246 -0.0594399725918596 -0.05896499231933753 3.14 0 0</pose>
+      </link>
+
+      <link name='apriltag2_link'>
+        <visual name='apriltag_visual'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag2.glb</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='apriltag_collision'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag2.glb</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <pose>0.1452100754 -0.0594399725918596 -0.05896499231933753 3.14 0 0</pose>
+      </link>
+
+      <link name='apriltag3_link'>
+        <visual name='apriltag_visual'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag3.glb</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='apriltag_collision'>
+          <geometry>
+            <mesh>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag3.glb</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <pose>0.4352100754 -0.0594399725918596 -0.05896499231933753 3.14 0 0</pose>
       </link>
       
       <pose>-2.13 -14.6 0.12896499231933753 1.3941895961122083e-08 -3.3141494098488552e-18 3.2909053232703221e-19</pose>
@@ -479,14 +569,14 @@
         <visual name='apriltag_visual'>
           <geometry>
             <mesh>
-              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag0.glb</uri>
             </mesh>
           </geometry>
         </visual>
         <collision name='apriltag_collision'>
           <geometry>
             <mesh>
-              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/ImageToStl.com_size70.glb</uri>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/tag0.glb</uri>
             </mesh>
           </geometry>
         </collision>
@@ -806,7 +896,121 @@
             <pose>9.91 -15.17 0 0 0 0</pose>
             <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/table.sdf</uri>
     </include>
-   
+
+        <include>
+            <name>irack_1</name>
+            <pose>2.18 -2.61 0 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/inventory_rack.sdf</uri>
+    </include>
+
+    <include>
+            <name>irack_2</name>
+            <pose>0.35 -2.61 0 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/inventory_rack.sdf</uri>
+    </include>
+
+    <include>
+            <name>irack_3</name>
+            <pose>-1.48 -2.61 0 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/inventory_rack.sdf</uri>
+    </include>
+
+    <include>
+            <name>irack_4</name>
+            <pose>-3.26 -2.61 0 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/inventory_rack.sdf</uri>
+    </include>
+
+    <include>
+            <name>irack_5</name>
+            <pose>-5.06 -2.61 0 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/inventory_rack.sdf</uri>
+    </include>
+
+    <include>
+            <name>irack_6</name>
+            <pose>-6.86 -2.61 0 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/inventory_rack.sdf</uri>
+    </include>
+
+    <include>
+            <name>irack_7</name>
+            <pose>-8.65 -2.61 0 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/inventory_rack.sdf</uri>
+    </include>
+
+    <include>
+            <name>irack_8</name>
+            <pose>-10.49 -2.61 0 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/inventory_rack.sdf</uri>
+    </include>
+
+    <include>
+            <name>tdesk_1</name>
+            <pose>-0.86 -6.25 0 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/technical_desk.sdf</uri>
+    </include>
+
+    <include>
+            <name>tdesk_2</name>
+            <pose>-7.53 -6.25 0 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/technical_desk.sdf</uri>
+    </include>
+
+     <include>
+            <name>csr_store</name>
+            <pose>-14.42 -4.44 0 0 0 -1.57</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/technical_desk.sdf</uri>
+    </include>
+
+    <include>
+            <name>deldesk_2</name>
+            <pose>17.21 -14.84 0 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/technical_desk.sdf</uri>
+    </include>
+
+    <include>
+            <name>pcdesk_2</name>
+            <pose>4.61 -6.33 0 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/pvc_desk.sdf</uri>
+    </include>
+
+    <include>
+            <name>del_shelf</name>
+            <pose>20.85 -15.50 0 0 0 0.78</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/delivery_shelf.sdf</uri>
+    </include>
+
+    <include>
+            <name>del_ref_shelf</name>
+            <pose>17.30 -16.90 0 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/delivery_shelf.sdf</uri>
+    </include>
+
+    <include>
+            <name>pharmacist_dock_1</name>
+            <pose>9.25 -8.76 0.03 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/pharmacist_dock.sdf</uri>
+    </include>
+
+    <include>
+            <name>pharmacist_dock_2</name>
+            <pose>9.25 -10.68 0.03 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/pharmacist_dock.sdf</uri>
+    </include>
+
+    <include>
+            <name>pharmacist_dock_3</name>
+            <pose>9.25 -12.66 0.03 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/pharmacist_dock.sdf</uri>
+    </include>
+
+    <include>
+            <name>pharmacist_dock_4</name>
+            <pose>8.7 -14.54 0.05 0 0 0</pose>
+            <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/pharmacist_dock.sdf</uri>
+    </include>
+
     <light name='sun' type='directional'>
       <pose>0 0 10 0 0 0</pose>
       <cast_shadows>true</cast_shadows>
