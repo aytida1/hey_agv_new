@@ -7,7 +7,7 @@ amcl:
     alpha4: 0.05  # Translation noise from rotation
     alpha5: 0.02  # Translation noise
     
-    base_frame_id: "base_link"
+    base_frame_id: "agv1/base_link"
     
     # Enable beam skipping for robustness against dynamic obstacles
     beam_skip_distance: 0.5
@@ -80,6 +80,8 @@ amcl:
     # Improved KLD sampling parameters
     kld_err: 0.01
     kld_z: 0.99
+
+    set_initial_pose: false
     
     # Set max particle weight for numerical stability
     max_weight_ratio: 1000.0

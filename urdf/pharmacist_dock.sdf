@@ -37,7 +37,7 @@
       <visual name="visual">
         <geometry>
           <mesh>
-              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/pharmacist_dock.gltf</uri>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/pharmacist_dock_v2.gltf</uri>
             </mesh>
         </geometry>
         <material>
@@ -63,7 +63,7 @@
             </mesh>
           </geometry>
         </collision>
-          <pose>-0.434789924621582 -0.28 0.05 3.14 0 0</pose>
+          <pose>-0.434789924621582 -0.09 0.05 3.14 0 0</pose>
       </link>
   </model>
 </sdf>

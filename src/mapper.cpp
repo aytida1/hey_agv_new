@@ -9,6 +9,22 @@
 class FrameMapper : public rclcpp::Node {
 public:
     FrameMapper() : Node("frame_mapper"){
+        // Get the namespace from the node
+        std::string node_namespace = get_namespace();
+        if (node_namespace == "/") {
+            robot_namespace_ = "";
+            odom_frame_ = "odom";
+            base_frame_ = "base_link";
+        } else {
+            // Remove leading slash and add trailing slash
+            robot_namespace_ = node_namespace.substr(1) + "/";
+            odom_frame_ = robot_namespace_ + "odom";
+            base_frame_ = robot_namespace_ + "base_link";
+        }
+
+        RCLCPP_INFO(this->get_logger(), "Using frames - odom: %s, base_link: %s", 
+                    odom_frame_.c_str(), base_frame_.c_str());
+
         odom_subscription_ = this->create_subscription<nav_msgs::msg::Odometry>(
             "odom", 
             10, 
@@ -31,8 +47,8 @@ private:
         auto new_odom_msg = nav_msgs::msg::Odometry();
         new_odom_msg.header.stamp = msg->header.stamp;
 
-        new_odom_msg.header.frame_id = "odom";
-        new_odom_msg.child_frame_id = "base_link";
+        new_odom_msg.header.frame_id = odom_frame_;
+        new_odom_msg.child_frame_id = base_frame_;
         new_odom_msg.pose.pose.position = msg->pose.pose.position;
         new_odom_msg.pose.pose.orientation = msg->pose.pose.orientation;
 
@@ -50,8 +66,8 @@ private:
         geometry_msgs::msg::TransformStamped transform_stamped;
 
         transform_stamped.header.stamp = msg->header.stamp;
-        transform_stamped.header.frame_id = "odom";
-        transform_stamped.child_frame_id = "base_link";
+        transform_stamped.header.frame_id = odom_frame_;
+        transform_stamped.child_frame_id = base_frame_;
 
         //set transform data
         transform_stamped.transform.translation.x = msg->pose.pose.position.x;
@@ -66,6 +82,11 @@ private:
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_subscription_;
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr new_odom_publisher_;
     std::unique_ptr<tf2_ros::TransformBroadcaster> tf2_broadcaster_;
+    
+    // Frame names
+    std::string robot_namespace_;
+    std::string odom_frame_;
+    std::string base_frame_;
 };
 
 

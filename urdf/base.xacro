@@ -9,8 +9,8 @@
     
     
 
-    <link name="base_footprint" />
-    <link name="base_link">
+    <!-- <link name="${robot_prefix}base_footprint" /> -->
+    <link name="${robot_prefix}base_link">
         <visual>
             <geometry>
                 <mesh filename="file://$(find hey_agv_new)/urdf/agv_base.dae"/>
@@ -27,16 +27,16 @@
         </collision>
     </link>
 
-    <joint name="base_footprint_joint" type="fixed">
-        <parent link="base_link" />
-        <child link="base_footprint" />
-        <origin xyz="0 0 0" rpy="0 0 0"/>
-    </joint>
+    <!-- <joint name="${robot_prefix}base_footprint_joint" type="fixed">
+        <parent link="${robot_prefix}base_footprint" />
+        <child link="${robot_prefix}base_link" />
+        <origin xyz="0 0 0.071" rpy="0 0 0"/>
+    </joint> -->
 
     
 
     <xacro:macro name="wheel_link" params="prefix">
-        <link name="${prefix}_wheel_link">
+        <link name="${robot_prefix}${prefix}_wheel_link">
             <visual>
                 <geometry>
                     <cylinder radius="${wheel_radius}" length="${wheel_length}" />
@@ -57,21 +57,21 @@
     <xacro:wheel_link prefix="right" />
     <xacro:wheel_link prefix="left" />
 
-    <joint name="base_left_wheel_joint" type="continuous">
-        <parent link="base_link" />
-        <child link="left_wheel_link" />
+    <joint name="${robot_prefix}base_left_wheel_joint" type="continuous">
+        <parent link="${robot_prefix}base_link" />
+        <child link="${robot_prefix}left_wheel_link" />
         <origin xyz="0 0.183 0.041" rpy="0 0 0" />
         <axis xyz="0 1 0" />
     </joint>
 
-    <joint name="base_right_wheel_joint" type="continuous">
-        <parent link="base_link" />
-        <child link="right_wheel_link" />
+    <joint name="${robot_prefix}base_right_wheel_joint" type="continuous">
+        <parent link="${robot_prefix}base_link" />
+        <child link="${robot_prefix}right_wheel_link" />
         <origin xyz="0 -0.183 0.041" rpy="0 0 0" />
         <axis xyz="0 1 0" />
     </joint>
 
-    <link name="agv/base_link/gpu_lidar_right">
+    <link name="${robot_prefix}gpu_lidar_right">
         <visual>
             <geometry>
                 <cylinder radius="0.03" length="0.015" />
@@ -90,13 +90,13 @@
 
     
 
-    <joint name="lidar_right_base_joint" type="fixed">
-        <parent link="base_link" />
-        <child link="agv/base_link/gpu_lidar_right" />
+    <joint name="${robot_prefix}lidar_right_base_joint" type="fixed">
+        <parent link="${robot_prefix}base_link" />
+        <child link="${robot_prefix}gpu_lidar_right" />
         <origin xyz="0.115 -0.16789 0.12" rpy="0 0 0"/>
     </joint>
 
-    <link name="agv/base_link/gpu_lidar_left">
+    <link name="${robot_prefix}gpu_lidar_left">
         <visual>
             <geometry>
                 <cylinder radius="0.03" length="0.015" />
@@ -113,15 +113,15 @@
             
     </link>
 
-    <joint name="lidar_left_base_joint" type="fixed">
-        <parent link="base_link" />
-        <child link="agv/base_link/gpu_lidar_left" />
+    <joint name="${robot_prefix}lidar_left_base_joint" type="fixed">
+        <parent link="${robot_prefix}base_link" />
+        <child link="${robot_prefix}gpu_lidar_left" />
         <origin xyz="-0.115 0.16789 0.12" rpy="0 0 3.14"/>
     </joint>
 
 
     <!-- make a square lift -->
-    <link name="lift_link">
+    <link name="${robot_prefix}lift_link">
         <visual>
             <geometry>
                 <box size="0.184 0.306 0.1" />
@@ -138,9 +138,9 @@
         <xacro:box_inertia m="3.0" l="0.306" w="0.184" h="0.1" xyz="0 0 0" rpy="0 0 0" />
     </link>
 
-    <joint name="lift_base_joint" type="prismatic">
-        <parent link="base_link" />
-        <child link="lift_link" />
+    <joint name="${robot_prefix}lift_base_joint" type="prismatic">
+        <parent link="${robot_prefix}base_link" />
+        <child link="${robot_prefix}lift_link" />
         <origin xyz="0 0 0.177" rpy="0 0 1.5708"/>
         <limit lower="0" upper="0.06" effort="1000.0" velocity="1.0"/>
         <axis xyz="0 0 1" />
@@ -148,7 +148,7 @@
 
 
     <!-- servo motor right-->
-    <link name="lift_servo_motor_right_link">
+    <link name="${robot_prefix}lift_servo_motor_right_link">
         <visual>
             <geometry>
                 <box size="0.04 0.02 0.005" />
@@ -165,9 +165,9 @@
         <xacro:box_inertia m="0.1" l="0.04" w="0.02" h="0.005" xyz="0 0 0" rpy="0 0 0" />
     </link>
 
-    <joint name="lift_servo_motor_right_joint" type="revolute">
-        <parent link="lift_link" />
-        <child link="lift_servo_motor_right_link" />
+    <joint name="${robot_prefix}lift_servo_motor_right_joint" type="revolute">
+        <parent link="${robot_prefix}lift_link" />
+        <child link="${robot_prefix}lift_servo_motor_right_link" />
         <origin xyz="0.07 -0.0525 0.0567" rpy="0 0 0"/>
         <axis xyz="0 0 1" />
         <limit lower="0.0" upper="1.57" effort="1.0" velocity="1.0"/>
@@ -176,7 +176,7 @@
 
 
     <!-- servo motor left -->
-    <link name="lift_servo_motor_left_link">
+    <link name="${robot_prefix}lift_servo_motor_left_link">
         <visual>
             <geometry>
                 <box size="0.04 0.02 0.005" />
@@ -193,9 +193,9 @@
         <xacro:box_inertia m="0.1" l="0.04" w="0.02" h="0.005" xyz="0 0 0" rpy="0 0 0" />
     </link>
 
-    <joint name="lift_servo_motor_left_joint" type="revolute">
-        <parent link="lift_link" />
-        <child link="lift_servo_motor_left_link" />
+    <joint name="${robot_prefix}lift_servo_motor_left_joint" type="revolute">
+        <parent link="${robot_prefix}lift_link" />
+        <child link="${robot_prefix}lift_servo_motor_left_link" />
         <origin xyz="-0.07 0.0525 0.0567" rpy="0 0 0"/>
         <axis xyz="0 0 1" />
         <limit lower="0.0" upper="1.57" effort="1.0" velocity="1.0"/>
@@ -203,7 +203,7 @@
 
     <!-- Caster wheel macro -->
     <xacro:macro name="caster_wheel" params="prefix">
-        <link name="${prefix}_caster_wheel">
+        <link name="${robot_prefix}${prefix}_caster_wheel">
             <visual>
                 <geometry>
                     <sphere radius="0.0119" />
@@ -228,33 +228,33 @@
     <xacro:caster_wheel prefix="rear_left"/>
 
     <!-- Add appropriate joints with correct positions -->
-    <joint name="front_right_caster_joint" type="fixed">
-        <parent link="base_link"/>
-        <child link="front_right_caster_wheel"/>
+    <joint name="${robot_prefix}front_right_caster_joint" type="fixed">
+        <parent link="${robot_prefix}base_link"/>
+        <child link="${robot_prefix}front_right_caster_wheel"/>
         <origin xyz="0.17 -0.17 0.0" rpy="0 0 0"/>
     </joint>
 
-    <joint name="front_left_caster_joint" type="fixed">
-        <parent link="base_link"/>
-        <child link="front_left_caster_wheel"/>
+    <joint name="${robot_prefix}front_left_caster_joint" type="fixed">
+        <parent link="${robot_prefix}base_link"/>
+        <child link="${robot_prefix}front_left_caster_wheel"/>
         <origin xyz="0.17 0.17 0.0" rpy="0 0 0"/>
     </joint>
 
-    <joint name="rear_right_caster_joint" type="fixed">
-        <parent link="base_link"/>
-        <child link="rear_right_caster_wheel"/>
+    <joint name="${robot_prefix}rear_right_caster_joint" type="fixed">
+        <parent link="${robot_prefix}base_link"/>
+        <child link="${robot_prefix}rear_right_caster_wheel"/>
         <origin xyz="-0.17 -0.17 0.0" rpy="0 0 0"/>
     </joint>
 
-    <joint name="rear_left_caster_joint" type="fixed">
-        <parent link="base_link"/>
-        <child link="rear_left_caster_wheel"/>
+    <joint name="${robot_prefix}rear_left_caster_joint" type="fixed">
+        <parent link="${robot_prefix}base_link"/>
+        <child link="${robot_prefix}rear_left_caster_wheel"/>
         <origin xyz="-0.17 0.17 0.0" rpy="0 0 0"/>
     </joint>
 
 
 
-    <link name="agv/base_link/camera">
+    <link name="${robot_prefix}camera">
         <visual>
             <geometry>
                 <box size="0.01 0.06 0.02" />
@@ -272,82 +272,82 @@
     </link>
 
 
-    <joint name="camera_base_joint_optical" type="fixed">
-        <parent link="agv/base_link/camera" />
-        <child link="camera_optical_link" />
+    <joint name="${robot_prefix}camera_base_joint_optical" type="fixed">
+        <parent link="${robot_prefix}camera" />
+        <child link="${robot_prefix}camera_optical_link" />
         <!-- <origin xyz="0.237 0 0.03" rpy="0 -0.1 0"/>   it was 0.03 -->
         <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/> 
     </joint>
 
-    <link name="camera_optical_link" ></link>
+    <link name="${robot_prefix}camera_optical_link" ></link>
 
     <!-- for optical correctness -->
-    <joint name="camera_base_joint" type="fixed">
-        <parent link="base_link" />
-        <child link="agv/base_link/camera" />
+    <joint name="${robot_prefix}camera_base_joint" type="fixed">
+        <parent link="${robot_prefix}base_link" />
+        <child link="${robot_prefix}camera" />
         <!-- <origin xyz="0.237 0 0.03" rpy="0 -0.1 0"/>   it was 0.03 -->
         <origin xyz="0.25 0 0.03" rpy="0 -0.1 0"/> 
     </joint>
 
-    <gazebo reference="base_link">
+    <gazebo reference="${robot_prefix}base_link">
         <material>Gazebo/DarkGrey</material>
     </gazebo>
 
-    <gazebo reference="right_wheel_link">
+    <gazebo reference="${robot_prefix}right_wheel_link">
         <material>Gazebo/Red</material>
         <mu1>0.98</mu1>
         <mu2>0.98</mu2>
     </gazebo>
 
-    <gazebo reference="left_wheel_link">
+    <gazebo reference="${robot_prefix}left_wheel_link">
         <material>Gazebo/Red</material>
         <mu1>0.98</mu1>
         <mu2>0.98</mu2>
     </gazebo>
 
-    <gazebo reference="front_right_caster_wheel">
+    <gazebo reference="${robot_prefix}front_right_caster_wheel">
         <material>Gazebo/Black</material>
         <mu1>0.0</mu1>
         <mu2>0.0</mu2>
     </gazebo>
 
-    <gazebo reference="lift_link">
+    <gazebo reference="${robot_prefix}lift_link">
         <material>Gazebo/White</material>
         <mu1>0.8</mu1>
         <mu2>0.8</mu2>
     </gazebo>
 
-    <gazebo reference="front_left_caster_wheel">
+    <gazebo reference="${robot_prefix}front_left_caster_wheel">
         <material>Gazebo/Black</material>
         <mu1>0.0</mu1>
         <mu2>0.0</mu2>
     </gazebo>
 
-    <gazebo reference="rear_right_caster_wheel">
+    <gazebo reference="${robot_prefix}rear_right_caster_wheel">
         <material>Gazebo/Black</material>
         <mu1>0.0</mu1>
         <mu2>0.0</mu2>
     </gazebo>
 
-    <gazebo reference="rear_left_caster_wheel">
+    <gazebo reference="${robot_prefix}rear_left_caster_wheel">
         <material>Gazebo/Black</material>
         <mu1>0.0</mu1>
         <mu2>0.0</mu2>
     </gazebo>
 
-    <gazebo reference="lift_servo_motor_right_link">
+    <gazebo reference="${robot_prefix}lift_servo_motor_right_link">
         <material>Gazebo/Red</material>
         <mu1>0.5</mu1>
         <mu2>0.5</mu2>
     </gazebo>
-    <gazebo reference="lift_servo_motor_left_link">
+    <gazebo reference="${robot_prefix}lift_servo_motor_left_link">
         <material>Gazebo/Red</material>
         <mu1>0.5</mu1>
         <mu2>0.5</mu2>
     </gazebo>
 
 
-    <gazebo reference="agv/base_link/camera">
+    <gazebo reference="${robot_prefix}camera">
         <sensor type="camera" name="camera">
           <camera>
             <horizontal_fov>1.047</horizontal_fov>
@@ -363,15 +363,14 @@
           <always_on>1</always_on>
           <update_rate>30</update_rate>
           <visualize>true</visualize>
-          <gz_frame_id>camera_optical_link</gz_frame_id>
         </sensor>
     </gazebo>
 
-    <gazebo reference="agv/base_link/gpu_lidar_right">
+    <gazebo reference="${robot_prefix}gpu_lidar_right">
         <material>Gazebo/Black</material>
         <sensor name='gpu_lidar_right' type='gpu_lidar'>
-            <pose relative_to='agv/base_link/gpu_lidar_right'>0 0 0 0 0 0</pose>
-            <topic>lidar1</topic>
+            <pose relative_to='${robot_prefix}gpu_lidar_right'>0 0 0 0 0 0</pose>
+            <topic>${namespace}/lidar1</topic>
             <update_rate>10</update_rate>
             <ray>
                 <scan>
@@ -399,11 +398,11 @@
         </sensor>
     </gazebo>
 
-    <gazebo reference="agv/base_link/gpu_lidar_left">
+    <gazebo reference="${robot_prefix}gpu_lidar_left">
         <material>Gazebo/Black</material>
         <sensor name='gpu_lidar_left' type='gpu_lidar'>
-            <pose relative_to='agv/base_link/gpu_lidar_left'>0 0 0 0 0 0</pose>
-            <topic>lidar2</topic>
+            <pose relative_to='${robot_prefix}gpu_lidar_left'>0 0 0 0 0 0</pose>
+            <topic>${namespace}/lidar2</topic>
             <update_rate>10</update_rate>
             <ray>
                 <scan>
@@ -434,29 +433,34 @@
     <gazebo>
         <plugin filename="gz-sim-diff-drive-system"
                 name="gz::sim::systems::DiffDrive">
-            <left_joint>base_left_wheel_joint</left_joint>
-            <right_joint>base_right_wheel_joint</right_joint>
+            <left_joint>${robot_prefix}base_left_wheel_joint</left_joint>
+            <right_joint>${robot_prefix}base_right_wheel_joint</right_joint>
             <wheel_separation>0.316</wheel_separation>
             <wheel_radius>0.053</wheel_radius>
             <odom_publish_frequency>10</odom_publish_frequency>
-            <topic>cmd_vel</topic>
+            <topic>${namespace}/cmd_vel</topic>
+            <odom_topic>${namespace}/odom</odom_topic>
+            <frame_id>${robot_prefix}odom</frame_id>
+            <child_frame_id>${robot_prefix}base_link</child_frame_id>
         </plugin>
     </gazebo>
 
-    <!-- Fix for sensors plugin -->
-    <gazebo>
+    <!-- Individual sensors plugin with unique scene name per robot -->
+    <!-- <gazebo>
         <plugin filename="gz-sim-sensors-system"
                 name="gz::sim::systems::Sensors">
             <render_engine>ogre2</render_engine>
+            <background_color>0.8 0.8 0.8</background_color>
+            <enable_shadows>false</enable_shadows>
         </plugin>
-    </gazebo>
+    </gazebo> -->
 
     <gazebo>
         <plugin
             filename="gz-sim-joint-controller-system"
             name="gz::sim::systems::JointController">
-            <joint_name>lift_servo_motor_left_joint</joint_name>
-            <topic>lift_servo_cmd</topic>
+            <joint_name>${robot_prefix}lift_servo_motor_left_joint</joint_name>
+            <topic>${namespace}/lift_servo_cmd</topic>
             <initial_velocity>0.0</initial_velocity>
             </plugin>
     </gazebo>
@@ -465,8 +469,8 @@
         <plugin
             filename="gz-sim-joint-controller-system"
             name="gz::sim::systems::JointController">
-            <joint_name>lift_servo_motor_right_joint</joint_name>
-            <topic>lift_servo_cmd</topic>
+            <joint_name>${robot_prefix}lift_servo_motor_right_joint</joint_name>
+            <topic>${namespace}/lift_servo_cmd</topic>
             <initial_velocity>0.0</initial_velocity>
             </plugin>
     </gazebo>
@@ -476,9 +480,9 @@
         <plugin
             filename="gz-sim-joint-controller-system"
             name="gz::sim::systems::JointController">
-            <joint_name>lift_base_joint</joint_name>
+            <joint_name>${robot_prefix}lift_base_joint</joint_name>
             <initial_velocity>0.0</initial_velocity>
-            <topic>lift_cmd</topic>
+            <topic>${namespace}/lift_cmd</topic>
         </plugin>
     </gazebo>
 
@@ -486,59 +490,13 @@
         <plugin
             filename="gz-sim-joint-state-publisher-system"
             name="gz::sim::systems::JointStatePublisher">
-            <topic>joint_states</topic>
-            <joint_name>base_left_wheel_joint</joint_name>
-            <joint_name>base_right_wheel_joint</joint_name>
-            <joint_name>lift_base_joint</joint_name>
-            <joint_name>lift_servo_motor_left_joint</joint_name>
-            <joint_name>lift_servo_motor_right_joint</joint_name>
+            <topic>${namespace}/joint_states</topic>
+            <joint_name>${robot_prefix}base_left_wheel_joint</joint_name>
+            <joint_name>${robot_prefix}base_right_wheel_joint</joint_name>
+            <joint_name>${robot_prefix}lift_base_joint</joint_name>
+            <joint_name>${robot_prefix}lift_servo_motor_left_joint</joint_name>
+            <joint_name>${robot_prefix}lift_servo_motor_right_joint</joint_name>
             </plugin>
     </gazebo>
-
-    <!-- <plugin
-            filename="gz-sim-joint-state-publisher-system"
-            name="gz::sim::systems::JointStatePublisher">
-            <joint_name>base_left_wheel_joint</joint_name>
-        </plugin> -->
-    
-
-    <!-- <link name="caster_wheel_link"> 
-        <visual>
-            <geometry>
-                <sphere radius="${wheel_radius / 2.0}" />
-            </geometry>
-            <origin xyz="0 0 0" rpy="0 0 0" />
-            <material name="grey" />
-        </visual>
-        <collision>
-            <geometry>
-                <sphere radius="${wheel_radius / 2.0}" />
-            </geometry>
-             <origin xyz="0 0 0" rpy="0 0 0" />
-        </collision>
-        
-        <xacro:sphere_inertia m="0.5" r="${wheel_radius / 2.0}" xyz="0 0 0" rpy="0 0 0" />
-    </link>
-
-    
-        
-    
-
-    
-
-
-    <joint name="base_joint" type="fixed">
-        <parent link="base_link" />
-        <child link="base_footprint" />
-        <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0"/>
-    </joint>
-
-    
-
-    <joint name="base_caster_wheel_joint" type="fixed">
-        <parent link="base_link" />
-        <child link="caster_wheel_link" />
-        <origin xyz="${base_length / 3.0} 0 ${-wheel_radius / 2.0}" rpy="0 0 0" />
-    </joint> -->
 
 </robot>

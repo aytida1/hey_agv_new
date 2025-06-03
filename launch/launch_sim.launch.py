@@ -1,7 +1,7 @@
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess, TimerAction, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import PathJoinSubstitution, Command, LaunchConfiguration
+from launch.substitutions import PathJoinSubstitution, Command, LaunchConfiguration, PythonExpression
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument
@@ -20,6 +20,8 @@ def generate_launch_description():
     
     # Create launch configuration variables
     use_sim_time = LaunchConfiguration('use_sim_time')
+    robot_name = LaunchConfiguration('robot_name')
+    namespace = LaunchConfiguration('namespace')
     
     # Declare launch arguments
     declare_use_sim_time = DeclareLaunchArgument(
@@ -28,8 +30,27 @@ def generate_launch_description():
         description='Use simulation (Gazebo) clock if true'
     )
     
+    declare_robot_name = DeclareLaunchArgument(
+        'robot_name',
+        default_value='agv',
+        description='Name of the robot'
+    )
+    
+    declare_namespace = DeclareLaunchArgument(
+        'namespace',
+        default_value='',
+        description='Namespace for the robot'
+    )
+    
     # Use Command to process xacro and ParameterValue to convert one datatype to another (here into string)
-    robot_description_content = ParameterValue(Command(['xacro ', xacro_file]), value_type=str)
+    robot_description_content = ParameterValue(
+        Command([
+            'xacro ', xacro_file,
+            ' robot_name:=', robot_name,
+            ' namespace:=', namespace
+        ]), 
+        value_type=str
+    )
     
     # Launch Gazebo and ExecuteProccess() is used to run commands in terminal
     gazebo = ExecuteProcess(
@@ -37,15 +58,17 @@ def generate_launch_description():
         output='screen'
     )
 
-    # Launch Robot State Publisher 
+    # Launch Robot State Publisher with proper namespace support
     robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
         name='robot_state_publisher',
+        namespace=namespace,
         output='screen',
         parameters=[{
             'robot_description': robot_description_content,
-            'use_sim_time': use_sim_time
+            'use_sim_time': use_sim_time,
+            'frame_prefix': PythonExpression(["'", namespace, "/' if '", namespace, "' != '' else ''"])
         }]
     )
 
@@ -110,6 +133,7 @@ def generate_launch_description():
         package="hey_agv_new",
         executable="frame_remapper",
         name="frame_remapper",
+        namespace=namespace,
         output="screen"
     )
     
@@ -119,6 +143,7 @@ def generate_launch_description():
         package="hey_agv_new",
         executable="scan_merger_v2",
         name="scan_merger",
+        namespace=namespace,
         output="screen"
     )
 
@@ -153,6 +178,8 @@ def generate_launch_description():
     # Return the launch description
     return LaunchDescription([
         declare_use_sim_time,
+        declare_robot_name,
+        declare_namespace,
         declare_launch_bridge,
         bridge,
         delayed_robot_state_publisher,

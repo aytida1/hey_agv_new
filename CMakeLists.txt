@@ -51,9 +51,11 @@ ament_target_dependencies(tag_transform rclcpp geometry_msgs tf2_ros tf2 tf2_geo
 
 install (
   PROGRAMS
-    src/some.py
     src/dock.py
+    src/pharmacy_dock_gui.py
+    src/some.py
     src/tag_publisher.py
+    src/agv_spawn_monitor.py
     DESTINATION lib/${PROJECT_NAME}
 )
 

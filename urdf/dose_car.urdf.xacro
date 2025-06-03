@@ -1,6 +1,17 @@
 <?xml version="1.0"?>
-<robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
-
+<robot name="$(arg robot_name)" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    
+    <!-- Declare launch arguments with default values -->
+    <xacro:arg name="robot_name" default="my_robot"/>
+    <xacro:arg name="namespace" default=""/>
+    
+    <!-- Set properties from arguments -->
+    <xacro:property name="robot_name" value="$(arg robot_name)"/>
+    <xacro:property name="namespace" value="$(arg namespace)"/>
+    
+    <!-- Keep robot_prefix empty - let robot_state_publisher handle frame prefixing -->
+    <xacro:property name="robot_prefix" value="${namespace}/"/>
+    
     <xacro:include filename="properties.xacro" />
     <xacro:include filename="base.xacro" />
     
