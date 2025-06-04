@@ -14,43 +14,30 @@ def create_base_amcl_config() -> Dict[str, Any]:
     """Create base AMCL configuration that can be used for any AGV."""
     return {
         "ros__parameters": {
-            # Motion model parameters
             "alpha1": 0.05,
             "alpha2": 0.05,
             "alpha3": 0.05,
             "alpha4": 0.05,
             "alpha5": 0.02,
-            
-            # Frame configuration (will be filled per AGV)
-            "base_frame_id": "",
+            "base_frame_id": "",  # Will be filled per AGV
             "global_frame_id": "map",
-            "odom_frame_id": "",
-            
-            # Beam skipping for robustness
+            "odom_frame_id": "",  # Will be filled per AGV
             "beam_skip_distance": 0.5,
             "beam_skip_error_threshold": 0.5,
             "beam_skip_threshold": 0.3,
             "do_beamskip": True,
-            
-            # Laser model parameters
             "lambda_short": 0.1,
             "laser_likelihood_max_dist": 4.0,
             "laser_max_range": 100.0,
             "laser_min_range": -1.0,
             "laser_model_type": "likelihood_field",
-            
-            # Particle filter parameters
             "max_beams": 120,
             "max_particles": 2000,
             "min_particles": 500,
             "pf_err": 0.01,
             "pf_z": 0.99,
-            
-            # Recovery parameters
             "recovery_alpha_fast": 0.1,
             "recovery_alpha_slow": 0.001,
-            
-            # Update parameters
             "resample_interval": 1,
             "robot_model_type": "nav2_amcl::DifferentialMotionModel",
             "save_pose_rate": 2.0,
@@ -61,13 +48,10 @@ def create_base_amcl_config() -> Dict[str, Any]:
             "tf_buffer_duration": 30.0,
             "update_min_a": 0.1,
             "update_min_d": 0.1,
-            
-            # Sensor model weights
             "z_hit": 0.8,
             "z_max": 0.02,
             "z_rand": 0.1,
             "z_short": 0.08,
-            
             "scan_topic": "scan",
             "selective_resampling": True,
             "first_map_only": False,
@@ -93,17 +77,32 @@ def generate_multi_agv_config(agv_namespaces: List[str], output_file: str) -> No
         amcl_config["ros__parameters"]["odom_frame_id"] = f"{namespace}/odom"
         complete_config[f"{namespace}/amcl"] = amcl_config
         
+        # Loopback Simulator configuration for this AGV
+        loopback_config = {
+            "ros__parameters": {
+                "base_frame_id": f"{namespace}/base_link",
+                "odom_frame_id": f"{namespace}/odom",
+                "map_frame_id": "map",
+                "scan_frame_id": "base_scan",  # tb4_loopback_simulator.launch.py remaps to 'rplidar_link'
+                "update_duration": 0.02
+            }
+        }
+        complete_config[f"{namespace}/loopback_simulator"] = loopback_config
+        
         # BT Navigator configuration for this AGV
         bt_nav_config = {
             "ros__parameters": {
                 "global_frame": "map",
                 "robot_base_frame": f"{namespace}/base_link",
-                "odom_topic": f"{namespace}/odom",
+                "odom_topic": f"/{namespace}/odom",
                 "bt_loop_duration": 10,
                 "default_server_timeout": 20,
                 "wait_for_service_timeout": 1000,
                 "action_server_result_timeout": 900.0,
-                "navigators": ["navigate_to_pose", "navigate_through_poses"],
+                "navigators": [
+                    "navigate_to_pose",
+                    "navigate_through_poses"
+                ],
                 "navigate_to_pose": {
                     "plugin": "nav2_bt_navigator::NavigateToPoseNavigator"
                 },
@@ -122,29 +121,32 @@ def generate_multi_agv_config(agv_namespaces: List[str], output_file: str) -> No
         controller_config = {
             "ros__parameters": {
                 "controller_frequency": 30.0,
-                "costmap_update_timeout": 0.30,
+                "costmap_update_timeout": 0.3,
                 "min_x_velocity_threshold": 0.001,
                 "min_y_velocity_threshold": 0.5,
                 "min_theta_velocity_threshold": 0.001,
                 "failure_tolerance": 0.3,
-                "progress_checker_plugins": ["progress_checker"],
-                "goal_checker_plugins": ["general_goal_checker"],
-                "controller_plugins": ["FollowPath"],
+                "progress_checker_plugins": [
+                    "progress_checker"
+                ],
+                "goal_checker_plugins": [
+                    "general_goal_checker"
+                ],
+                "controller_plugins": [
+                    "FollowPath"
+                ],
                 "use_realtime_priority": False,
-                
                 "progress_checker": {
                     "plugin": "nav2_controller::SimpleProgressChecker",
                     "required_movement_radius": 0.5,
                     "movement_time_allowance": 10.0
                 },
-                
                 "general_goal_checker": {
                     "stateful": True,
                     "plugin": "nav2_controller::SimpleGoalChecker",
                     "xy_goal_tolerance": 0.05,
                     "yaw_goal_tolerance": 0.01
                 },
-                
                 "FollowPath": {
                     "plugin": "nav2_rotation_shim_controller::RotationShimController",
                     "primary_controller": "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController",
@@ -195,11 +197,14 @@ def generate_multi_agv_config(agv_namespaces: List[str], output_file: str) -> No
                     "height": 3,
                     "resolution": 0.05,
                     "robot_radius": 0.26,
-                    "plugins": ["voxel_layer", "inflation_layer"],
+                    "plugins": [
+                        "voxel_layer",
+                        "inflation_layer"
+                    ],
                     "inflation_layer": {
                         "plugin": "nav2_costmap_2d::InflationLayer",
                         "cost_scaling_factor": 3.0,
-                        "inflation_radius": 0.70
+                        "inflation_radius": 0.7
                     },
                     "voxel_layer": {
                         "plugin": "nav2_costmap_2d::VoxelLayer",
@@ -212,7 +217,7 @@ def generate_multi_agv_config(agv_namespaces: List[str], output_file: str) -> No
                         "mark_threshold": 0,
                         "observation_sources": "scan",
                         "scan": {
-                            "topic": f"{namespace}/scan",
+                            "topic": f"/{namespace}/scan",
                             "max_obstacle_height": 2.0,
                             "clearing": True,
                             "marking": True,
@@ -240,13 +245,21 @@ def generate_multi_agv_config(agv_namespaces: List[str], output_file: str) -> No
                     "robot_radius": 0.26,
                     "resolution": 0.05,
                     "track_unknown_space": True,
-                    "plugins": ["static_layer", "obstacle_layer", "inflation_layer"],
+                    # Add rolling window and size parameters to handle robot outside map bounds
+                    "rolling_window": True,
+                    "width": 50,
+                    "height": 50,
+                    "plugins": [
+                        "static_layer",
+                        "obstacle_layer",
+                        "inflation_layer"
+                    ],
                     "obstacle_layer": {
                         "plugin": "nav2_costmap_2d::ObstacleLayer",
                         "enabled": True,
                         "observation_sources": "scan",
                         "scan": {
-                            "topic": f"{namespace}/scan",
+                            "topic": f"/{namespace}/scan",
                             "max_obstacle_height": 2.0,
                             "clearing": True,
                             "marking": True,
@@ -259,7 +272,9 @@ def generate_multi_agv_config(agv_namespaces: List[str], output_file: str) -> No
                     },
                     "static_layer": {
                         "plugin": "nav2_costmap_2d::StaticLayer",
-                        "map_subscribe_transient_local": True
+                        "map_topic": "/map",
+                        "map_subscribe_transient_local": True,
+                        "subscribe_to_updates": True
                     },
                     "inflation_layer": {
                         "plugin": "nav2_costmap_2d::InflationLayer",
@@ -276,7 +291,9 @@ def generate_multi_agv_config(agv_namespaces: List[str], output_file: str) -> No
         planner_config = {
             "ros__parameters": {
                 "expected_planner_frequency": 20.0,
-                "planner_plugins": ["GridBased"],
+                "planner_plugins": [
+                    "GridBased"
+                ],
                 "costmap_update_timeout": 1.0,
                 "GridBased": {
                     "plugin": "nav2_navfn_planner::NavfnPlanner",
@@ -291,17 +308,33 @@ def generate_multi_agv_config(agv_namespaces: List[str], output_file: str) -> No
         # Behavior Server configuration for this AGV
         behavior_config = {
             "ros__parameters": {
-                "local_costmap_topic": f"{namespace}/local_costmap/costmap_raw",
-                "global_costmap_topic": f"{namespace}/global_costmap/costmap_raw",
-                "local_footprint_topic": f"{namespace}/local_costmap/published_footprint",
-                "global_footprint_topic": f"{namespace}/global_costmap/published_footprint",
+                "local_costmap_topic": f"/{namespace}/local_costmap/costmap_raw",
+                "global_costmap_topic": f"/{namespace}/global_costmap/costmap_raw",
+                "local_footprint_topic": f"/{namespace}/local_costmap/published_footprint",
+                "global_footprint_topic": f"/{namespace}/global_costmap/published_footprint",
                 "cycle_frequency": 10.0,
-                "behavior_plugins": ["spin", "backup", "drive_on_heading", "assisted_teleop", "wait"],
-                "spin": {"plugin": "nav2_behaviors::Spin"},
-                "backup": {"plugin": "nav2_behaviors::BackUp"},
-                "drive_on_heading": {"plugin": "nav2_behaviors::DriveOnHeading"},
-                "wait": {"plugin": "nav2_behaviors::Wait"},
-                "assisted_teleop": {"plugin": "nav2_behaviors::AssistedTeleop"},
+                "behavior_plugins": [
+                    "spin",
+                    "backup",
+                    "drive_on_heading",
+                    "assisted_teleop",
+                    "wait"
+                ],
+                "spin": {
+                    "plugin": "nav2_behaviors::Spin"
+                },
+                "backup": {
+                    "plugin": "nav2_behaviors::BackUp"
+                },
+                "drive_on_heading": {
+                    "plugin": "nav2_behaviors::DriveOnHeading"
+                },
+                "wait": {
+                    "plugin": "nav2_behaviors::Wait"
+                },
+                "assisted_teleop": {
+                    "plugin": "nav2_behaviors::AssistedTeleop"
+                },
                 "local_frame": f"{namespace}/odom",
                 "global_frame": "map",
                 "robot_base_frame": f"{namespace}/base_link",
@@ -320,17 +353,130 @@ def generate_multi_agv_config(agv_namespaces: List[str], output_file: str) -> No
                 "smoothing_frequency": 20.0,
                 "scale_velocities": False,
                 "feedback": "OPEN_LOOP",
-                "max_velocity": [4.0, 0.0, 2.0],
-                "min_velocity": [-4.0, 0.0, -2.0],
-                "max_accel": [2.5, 0.0, 3.2],
-                "max_decel": [-2.5, 0.0, -3.2],
-                "odom_topic": f"{namespace}/odom",
+                "max_velocity": [
+                    4.0,
+                    0.0,
+                    2.0
+                ],
+                "min_velocity": [
+                    -4.0,
+                    0.0,
+                    -2.0
+                ],
+                "max_accel": [
+                    2.5,
+                    0.0,
+                    3.2
+                ],
+                "max_decel": [
+                    -2.5,
+                    0.0,
+                    -3.2
+                ],
+                "odom_topic": f"/{namespace}/odom",
                 "odom_duration": 0.1,
-                "deadband_velocity": [0.0, 0.0, 0.0],
+                "deadband_velocity": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
                 "velocity_timeout": 1.0
             }
         }
         complete_config[f"{namespace}/velocity_smoother"] = velocity_smoother_config
+        
+        # Docking Server configuration for this AGV
+        docking_config = {
+            "ros__parameters": {
+                "controller_frequency": 50.0,
+                "initial_perception_timeout": 5.0,
+                "wait_charge_timeout": 5.0,
+                "dock_approach_timeout": 30.0,
+                "undock_linear_tolerance": 0.1,
+                "undock_angular_tolerance": 0.01,
+                "max_retries": 5,
+                "base_frame": "base_link",
+                "fixed_frame": "map",
+                "dock_backwards": False,
+                "dock_prestaging_tolerance": 0.1,
+                # navigate_to_staging_pose: false
+                
+                # Types of docks
+                "dock_plugins": ['pharmacist_docks', 'psr_docks'],
+                "pharmacist_docks": {
+                    "plugin": 'opennav_docking::SimpleNonChargingDock',
+                    "docking_threshold": 0.01,
+                    "staging_x_offset": -0.6,
+                    "use_external_detection_pose": True,
+                    "use_battery_status": False,  # true
+                    "use_stall_detection": False,  # true
+                    "external_detection_timeout": 30.0,
+                    "external_detection_translation_x": -0.37,
+                    "external_detection_translation_y": 0.0,
+                    "external_detection_rotation_roll": 0.0,
+                    "external_detection_rotation_pitch": 1.5708,
+                    "external_detection_rotation_yaw": 0.0,
+                    "filter_coef": 0.2
+                },
+                "psr_docks": {
+                    "plugin": 'opennav_docking::SimpleNonChargingDock',
+                    "docking_threshold": 0.01,
+                    "staging_x_offset": -0.6,
+                    "use_external_detection_pose": True,
+                    "use_battery_status": False,  # true
+                    "use_stall_detection": False,  # true
+                    "external_detection_timeout": 30.0,
+                    "external_detection_translation_x": -0.37,
+                    "external_detection_translation_y": 0.0,
+                    "external_detection_rotation_roll": 0.0,
+                    "external_detection_rotation_pitch": 1.5708,
+                    "external_detection_rotation_yaw": 0.0,
+                    "filter_coef": 0.2
+                },
+                
+                # Dock instances
+                # The following example illustrates configuring dock instances.
+                "docks": ['pharmacist_dock4', 'pharmacist_dock3', 'pharmacist_dock2', 'pharmacist_dock1'],  # Input your docks here
+                
+                # pose: [-5.99, -15.2, 1.57] # for psr docking
+                
+                "pharmacist_dock4": {
+                    "type": 'pharmacist_docks',
+                    "frame": "map",
+                    "pose": [8.657, -15.025, 1.578]
+                },
+                "pharmacist_dock3": {
+                    "type": 'pharmacist_docks',
+                    "frame": "map",
+                    "pose": [8.657, -13.142, 1.578]
+                },
+                "pharmacist_dock2": {
+                    "type": 'pharmacist_docks',
+                    "frame": "map",
+                    "pose": [8.657, -11.262, 1.578]
+                },
+                "pharmacist_dock1": {
+                    "type": 'pharmacist_docks',
+                    "frame": "map",
+                    "pose": [8.657, -9.382, 1.578]
+                },
+                
+                "controller": {
+                    "k_phi": 3.5,
+                    "k_delta": 2.5,
+                    "v_linear_min": 0.1,
+                    "v_linear_max": 0.1,
+                    "use_collision_detection": False,
+                    "costmap_topic": "local_costmap/costmap_raw",
+                    "footprint_topic": "local_costmap/published_footprint",
+                    "transform_tolerance": 1.0,
+                    "projection_time": 10.0,
+                    "simulation_step": 0.05,
+                    "dock_collision_threshold": 0.2
+                }
+            }
+        }
+        complete_config[f"{namespace}/docking_server"] = docking_config
     
     # Add shared Waypoint Follower configuration (can be shared across AGVs)
     complete_config["waypoint_follower"] = {

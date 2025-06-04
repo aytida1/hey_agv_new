@@ -9,14 +9,18 @@ class AGVControlCenter {
         this.agvData = {
             agv1: { position: {x: 0, y: 0, z: 0}, orientation: 0, active: false, color: '#e74c3c' },
             agv2: { position: {x: 0, y: 0, z: 0}, orientation: 0, active: false, color: '#2ecc71' },
-            agv3: { position: {x: 0, y: 0, z: 0}, orientation: 0, active: false, color: '#f39c12' }
+            agv3: { position: {x: 0, y: 0, z: 0}, orientation: 0, active: false, color: '#f39c12' },
+            agv4: { position: {x: 0, y: 0, z: 0}, orientation: 0, active: false, color: '#9b59b6' },
+            agv5: { position: {x: 0, y: 0, z: 0}, orientation: 0, active: false, color: '#1abc9c' }
         };
         
         // Initialize smooth movement tracking
         this.agvTargetPositions = {
             agv1: { position: {x: 0, y: 0, z: 0}, orientation: 0 },
             agv2: { position: {x: 0, y: 0, z: 0}, orientation: 0 },
-            agv3: { position: {x: 0, y: 0, z: 0}, orientation: 0 }
+            agv3: { position: {x: 0, y: 0, z: 0}, orientation: 0 },
+            agv4: { position: {x: 0, y: 0, z: 0}, orientation: 0 },
+            agv5: { position: {x: 0, y: 0, z: 0}, orientation: 0 }
         };
         
         // Control settings
@@ -58,7 +62,9 @@ class AGVControlCenter {
         this.laserScanData = {
             agv1: { ranges: [], angle_min: 0, angle_max: 0, angle_increment: 0, range_max: 0, lastUpdate: 0 },
             agv2: { ranges: [], angle_min: 0, angle_max: 0, angle_increment: 0, range_max: 0, lastUpdate: 0 },
-            agv3: { ranges: [], angle_min: 0, angle_max: 0, angle_increment: 0, range_max: 0, lastUpdate: 0 }
+            agv3: { ranges: [], angle_min: 0, angle_max: 0, angle_increment: 0, range_max: 0, lastUpdate: 0 },
+            agv4: { ranges: [], angle_min: 0, angle_max: 0, angle_increment: 0, range_max: 0, lastUpdate: 0 },
+            agv5: { ranges: [], angle_min: 0, angle_max: 0, angle_increment: 0, range_max: 0, lastUpdate: 0 }
         };
         
         // UI settings
@@ -346,8 +352,25 @@ class AGVControlCenter {
         Object.keys(this.agvData).forEach(agvId => {
             this.setupNavigationActionClient(agvId);
         });
+
+        // Setup docking service clients for each AGV
+        this.dockingServiceClients = {};
+        this.undockingServiceClients = {};
+        Object.keys(this.agvData).forEach(agvId => {
+            this.dockingServiceClients[agvId] = new ROSLIB.Service({
+                ros: this.ros,
+                name: `/${agvId}/dock_robot`,
+                serviceType: 'opennav_docking_msgs/DockRobot'
+            });
+            
+            this.undockingServiceClients[agvId] = new ROSLIB.Service({
+                ros: this.ros,
+                name: `/${agvId}/undock_robot`,
+                serviceType: 'opennav_docking_msgs/UndockRobot'
+            });
+        });
         
-        console.log('✅ Set up publishers for cmd_vel, initialpose topics and navigation action clients');
+        console.log('✅ Set up publishers for cmd_vel, initialpose topics, navigation action clients, and docking services');
     }
     
     handleMapData(mapMsg) {
@@ -1538,9 +1561,14 @@ class AGVControlCenter {
             return;
         }
         
-        console.log(`🧭 Navigating ${this.selectedAgv.toUpperCase()} to ${locationName}: (${location.x}, ${location.y}, ${location.yaw * 180 / Math.PI}°)`);
-        
-        this.sendNavigationGoal(location.x, location.y, location.yaw, locationName);
+        // Check if this is a dock location
+        if (locationName.startsWith('dock')) {
+            console.log(`🔌 Docking ${this.selectedAgv.toUpperCase()} to ${locationName}`);
+            this.performDocking(locationName);
+        } else {
+            console.log(`🧭 Navigating ${this.selectedAgv.toUpperCase()} to ${locationName}: (${location.x}, ${location.y}, ${location.yaw * 180 / Math.PI}°)`);
+            this.sendNavigationGoal(location.x, location.y, location.yaw, locationName);
+        }
     }
     
     sendCustomGoal() {
@@ -1847,7 +1875,7 @@ class AGVControlCenter {
             const agv = this.agvData[this.selectedAgv];
             const goalX = this.currentGoal.x;
             const goalY = this.currentGoal.y;
-            const currentX = agv.position.x;
+                       const currentX = agv.position.x;
             const currentY = agv.position.y;
             
             // Calculate distance to goal
@@ -2029,6 +2057,115 @@ class AGVControlCenter {
     
     // ==================== END NAVIGATION METHODS ====================
     
+    // ==================== DOCKING METHODS ====================
+    
+    // Docking functionality
+    performDocking(dockName) {
+        if (!this.selectedAgv || !this.isConnected) {
+            this.showNavigationStatus('Please select an AGV and ensure ROS connection', 'error');
+            return;
+        }
+        
+        const agvId = this.selectedAgv;
+        console.log(`🔌 Starting docking sequence for ${agvId} to ${dockName}`);
+        
+        // Show docking status
+        this.showNavigationStatus(`🔌 Docking ${agvId.toUpperCase()} to ${dockName}...`, 'info');
+        
+        // Create dock request
+        const dockRequest = new ROSLIB.ServiceRequest({
+            dock_id: dockName,
+            dock_type: 'pharmacist_dock',  // Based on your configuration
+            nav_to_staging_pose: true,
+            max_staging_time: 60.0  // 60 seconds timeout
+        });
+        
+        // Call docking service
+        this.dockingServiceClients[agvId].callService(dockRequest, 
+            (result) => {
+                console.log('✅ Docking service result:', result);
+                if (result.success) {
+                    this.showNavigationStatus(`✅ Successfully docked ${agvId.toUpperCase()} to ${dockName}`, 'success');
+                    
+                    // Auto-hide success message after 3 seconds
+                    setTimeout(() => {
+                        this.hideNavigationStatus();
+                    }, 3000);
+                } else {
+                    const errorMsg = result.error_msg || 'Unknown docking error';
+                    this.showNavigationStatus(`❌ Docking failed: ${errorMsg}`, 'error');
+                    
+                    // Auto-hide error message after 5 seconds
+                    setTimeout(() => {
+                        this.hideNavigationStatus();
+                    }, 5000);
+                }
+            },
+            (error) => {
+                console.error('❌ Docking service error:', error);
+                this.showNavigationStatus(`❌ Docking service error: ${error}`, 'error');
+                
+                // Auto-hide error message after 5 seconds
+                setTimeout(() => {
+                    this.hideNavigationStatus();
+                }, 5000);
+            }
+        );
+    }
+    
+    performUndocking(agvId = null) {
+        const targetAgv = agvId || this.selectedAgv;
+        
+        if (!targetAgv || !this.isConnected) {
+            this.showNavigationStatus('Please select an AGV and ensure ROS connection', 'error');
+            return;
+        }
+        
+        console.log(`🔓 Starting undocking sequence for ${targetAgv}`);
+        
+        // Show undocking status
+        this.showNavigationStatus(`🔓 Undocking ${targetAgv.toUpperCase()}...`, 'info');
+        
+        // Create undock request
+        const undockRequest = new ROSLIB.ServiceRequest({
+            // Empty request for undocking
+        });
+        
+        // Call undocking service
+        this.undockingServiceClients[targetAgv].callService(undockRequest,
+            (result) => {
+                console.log('✅ Undocking service result:', result);
+                if (result.success) {
+                    this.showNavigationStatus(`✅ Successfully undocked ${targetAgv.toUpperCase()}`, 'success');
+                    
+                    // Auto-hide success message after 3 seconds
+                    setTimeout(() => {
+                        this.hideNavigationStatus();
+                    }, 3000);
+                } else {
+                    const errorMsg = result.error_msg || 'Unknown undocking error';
+                    this.showNavigationStatus(`❌ Undocking failed: ${errorMsg}`, 'error');
+                    
+                    // Auto-hide error message after 5 seconds
+                    setTimeout(() => {
+                        this.hideNavigationStatus();
+                    }, 5000);
+                }
+            },
+            (error) => {
+                console.error('❌ Undocking service error:', error);
+                this.showNavigationStatus(`❌ Undocking service error: ${error}`, 'error');
+                
+                // Auto-hide error message after 5 seconds
+                setTimeout(() => {
+                    this.hideNavigationStatus();
+                }, 5000);
+            }
+        );
+    }
+    
+    // ==================== END DOCKING METHODS ====================
+    
     // Debug method to check available navigation interfaces
     checkNavigationInterfaces() {
         console.log('🔍 Checking available navigation interfaces...');
@@ -2075,7 +2212,7 @@ class AGVControlCenter {
         }, 2000);
     }
 }
-
+    
 // Initialize the AGV Control Center when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     window.agvControl = new AGVControlCenter();

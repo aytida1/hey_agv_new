@@ -37,7 +37,7 @@ def generate_launch_description():
 
     # Default paths
     default_map_file = os.path.join(pkg_share, 'urdf', 'sacramento.yaml')
-    default_params_file = os.path.join(pkg_share, 'config', 'amcl_config.yaml')
+    default_params_file = os.path.join(pkg_share, 'config', 'nav2_params_5agv_with_docking.yaml')
 
     stdout_linebuf_envvar = SetEnvironmentVariable(
         'RCUTILS_LOGGING_BUFFERED_STREAM', '1'
@@ -112,12 +112,12 @@ def generate_launch_description():
         }]
     )
 
-    # Function to create AGV group (AMCL + Navigation)
+    # Function to create AGV group (AMCL + Navigation + Docking)
     def create_agv_group(namespace, delay_seconds):
         nav_config = os.path.join(
             get_package_share_directory('hey_agv_new'),
             'config',
-            'multi_nav2_params.yaml'
+            'nav2_params_5agv_with_docking.yaml'
         )
 
         # AMCL node for this AGV
@@ -250,6 +250,67 @@ def generate_launch_description():
             ]
         )
 
+        # Docking server for this AGV
+        docking_server = Node(
+            package='opennav_docking',
+            executable='opennav_docking',
+            name='docking_server',
+            namespace=namespace,
+            output='screen',
+            respawn=use_respawn,
+            respawn_delay=2.0,
+            parameters=[nav_config, {'use_sim_time': use_sim_time}],
+            arguments=['--ros-args', '--log-level', log_level],
+            remappings=[
+                ('cmd_vel', f'/{namespace}/cmd_vel'),
+                ('odom', f'/{namespace}/odom'),
+                ('detected_dock_pose', f'/{namespace}/detected_dock_pose'),
+                ('tf', '/tf'),
+                ('tf_static', '/tf_static')
+            ]
+        )
+
+        # AprilTag detection node for this AGV
+        apriltag_node = Node(
+            package='apriltag_ros',
+            executable='apriltag_node',
+            name='apriltag_node',
+            namespace=namespace,
+            output='screen',
+            parameters=[
+                os.path.join(
+                    get_package_share_directory('apriltag_ros'),
+                    'cfg',
+                    'tags_36h11.yaml'
+                ),
+                {
+                'image_transport': 'raw',
+                'family': '36h11',
+                'size': 0.162,
+                'max_hamming': 0,
+                'z_up': True
+            }],
+            remappings=[
+                ('image_rect', f'/{namespace}/camera/image'),
+                ('camera_info', f'/{namespace}/camera/camera_info'),
+                ('tf', '/tf'),
+                ('tf_static', '/tf_static')
+            ]
+        )
+
+        # Tag transform node for this AGV
+        tag_transform_node = Node(
+            package='hey_agv_new',
+            executable='tag_transform',
+            name='tag_transform',
+            namespace=namespace,
+            output='screen',
+            parameters=[{'use_sim_time': use_sim_time}],
+            remappings=[
+                ('detected_dock_pose', f'/{namespace}/detected_dock_pose')
+            ]
+        )
+
         # Lifecycle manager for this AGV (all navigation nodes)
         lifecycle_manager = Node(
             package='nav2_lifecycle_manager',
@@ -268,7 +329,8 @@ def generate_launch_description():
                     'behavior_server',
                     'bt_navigator',
                     'waypoint_follower',
-                    'velocity_smoother'
+                    'velocity_smoother',
+                    'docking_server'
                 ]
             }]
         )
@@ -286,7 +348,10 @@ def generate_launch_description():
                     bt_navigator,
                     waypoint_follower,
                     velocity_smoother,
-                     lifecycle_manager
+                    docking_server,
+                    apriltag_node,
+                    tag_transform_node,
+                    lifecycle_manager
                 ])
             ]
         )
@@ -296,11 +361,20 @@ def generate_launch_description():
     agv1_group = create_agv_group('agv1', 5.0)
     
     # AGV2 starts 3 seconds after AGV1
-    agv2_group = create_agv_group('agv2', 8.0)
+    # agv2_group = create_agv_group('agv2', 8.0)
+    
+    # # AGV3 starts 3 seconds after AGV2
+    # agv3_group = create_agv_group('agv3', 11.0)
+    
+    # # AGV4 starts 3 seconds after AGV3
+    # agv4_group = create_agv_group('agv4', 14.0)
+    
+    # # AGV5 starts 3 seconds after AGV4
+    # agv5_group = create_agv_group('agv5', 17.0)
 
     # Initial pose setter (starts after AGVs are launched)
     initial_pose_setter = TimerAction(
-        period=12.0,  # Start after both AGVs are initialized
+        period=20.0,  # Start after all AGVs are initialized
         actions=[
             Node(
                 package='hey_agv_new',
@@ -313,7 +387,7 @@ def generate_launch_description():
 
     # TF Publisher node (starts after AGVs are initialized)
     tf_publisher_node = TimerAction(
-        period=10.0,  # Start after AGVs are initialized
+        period=18.0,  # Start after AGVs are initialized
         actions=[
             Node(
                 package='hey_agv_new',
@@ -345,12 +419,15 @@ def generate_launch_description():
 
     # Add AGV groups with delays
     ld.add_action(agv1_group)  # Starts after 5 seconds
-    # ld.add_action(agv2_group)  # Starts after 8 seconds
-    
-    # Add TF publisher (starts after 10 seconds)
+   # ld.add_action(agv2_group)  # Starts after 8 seconds
+    # ld.add_action(agv3_group)  # Starts after 11 seconds
+    # ld.add_action(agv4_group)  # Starts after 14 seconds
+    # ld.add_action(agv5_group)  # Starts after 17 seconds
+
+    # Add TF publisher (starts after 18 seconds)
     ld.add_action(tf_publisher_node)
     
-    # Add initial pose setter (starts after 12 seconds)
+    # Add initial pose setter (starts after 20 seconds)
     ld.add_action(initial_pose_setter)
 
     return ld

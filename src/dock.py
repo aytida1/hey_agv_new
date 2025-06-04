@@ -10,7 +10,7 @@ from geometry_msgs.msg import PoseStamped
 class DockRobotActionClient(Node):
     def __init__(self):
         super().__init__('dock_robot_client')
-        self._action_client = ActionClient(self, DockRobot, '/dock_robot')
+        self._action_client = ActionClient(self, DockRobot, 'agv1/dock_robot')
         self.get_logger().info('DockRobot Action Client initialized')
 
     def send_goal(self, dock_id='', dock_type='', dock_pose=None, navigate_to_staging_pose=True):
@@ -97,7 +97,7 @@ def main(args=None):
     try:
         # Send docking goal
         future = action_client.send_goal(
-            dock_id="home_dock",
+            dock_id="pharmacist_dock2",
             dock_type="simple_charging_dock",
             navigate_to_staging_pose=True
         )

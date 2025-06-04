@@ -8,7 +8,7 @@
 class TagTransformNode : public rclcpp::Node
 {
 public:
-    TagTransformNode() : Node("tag_transform_node")
+    TagTransformNode() : Node("tag_transform_node"), last_warning_time_(0)
     {
         // Initialize TF2 buffer and listener
         tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
@@ -27,9 +27,11 @@ public:
         this->declare_parameter("base_frame", "map");
         this->declare_parameter("tag_frame", "tag36h11:0");
         this->declare_parameter("publish_rate", 30.0);
+        this->declare_parameter("warning_interval", 5.0); // Log warning every 5 seconds
         
         base_frame_ = this->get_parameter("base_frame").as_string();
         tag_frame_ = this->get_parameter("tag_frame").as_string();
+        warning_interval_ = this->get_parameter("warning_interval").as_double();
         
         double rate = this->get_parameter("publish_rate").as_double();
         timer_ = this->create_wall_timer(
@@ -80,9 +82,15 @@ private:
         }
         catch (const tf2::TransformException & ex)
         {
-            RCLCPP_WARN(this->get_logger(), 
-                       "Could not transform %s to %s: %s", 
-                       tag_frame_.c_str(), base_frame_.c_str(), ex.what());
+            // Only log warning if enough time has passed since last warning
+            double current_time = this->now().seconds();
+            if (current_time - last_warning_time_ >= warning_interval_)
+            {
+                RCLCPP_WARN(this->get_logger(), 
+                           "Could not transform %s to %s: %s (suppressing similar warnings for %.1f seconds)", 
+                           tag_frame_.c_str(), base_frame_.c_str(), ex.what(), warning_interval_);
+                last_warning_time_ = current_time;
+            }
         }
     }
     
@@ -97,6 +105,10 @@ private:
     // Frame names
     std::string base_frame_;
     std::string tag_frame_;
+    
+    // Warning throttling
+    double last_warning_time_;
+    double warning_interval_;
 };
 
 int main(int argc, char * argv[])

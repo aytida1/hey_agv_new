@@ -14,7 +14,7 @@ from geometry_msgs.msg import PoseStamped
 class PharmacyDockGUI(Node):
     def __init__(self):
         super().__init__('pharmacy_dock_gui')
-        self._action_client = ActionClient(self, DockRobot, '/dock_robot')
+        self._action_client = ActionClient(self, DockRobot, 'agv1/dock_robot')
         self.get_logger().info('Pharmacy Dock GUI initialized')
         
         # Track current operation
@@ -33,6 +33,9 @@ class PharmacyDockGUI(Node):
         self.root.title("Pharmacy Dock Control")
         self.root.geometry("500x400")
         self.root.configure(bg='#f0f0f0')
+        
+        # Handle window closing
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         
         # Title label
         title_label = tk.Label(
@@ -137,14 +140,10 @@ class PharmacyDockGUI(Node):
             )
             
             if future is not None:
-                # Wait for completion
-                rclpy.spin_until_future_complete(self, future)
-                
-                # Give some time for result processing
+                # Wait for the goal to be sent
                 import time
-                start_time = time.time()
-                while time.time() - start_time < 2.0:
-                    rclpy.spin_once(self, timeout_sec=0.1)
+                while not future.done():
+                    time.sleep(0.1)
             else:
                 self.update_status(f"Failed to send docking goal to {dock_id}", 'error')
                 
@@ -293,43 +292,88 @@ class PharmacyDockGUI(Node):
         for btn in self.dock_buttons:
             btn.config(state=state)
 
+    def on_closing(self):
+        """Handle window closing event"""
+        try:
+            self.root.quit()
+        except:
+            pass
+
     def run_gui(self):
         """Run the GUI main loop"""
-        def ros_spin():
-            while rclpy.ok():
-                rclpy.spin_once(self, timeout_sec=0.1)
+        import time
         
-        # Start ROS spinning in background thread
-        ros_thread = threading.Thread(target=ros_spin, daemon=True)
-        ros_thread.start()
+        def ros_and_gui_loop():
+            """Combined ROS spinning and GUI updates"""
+            last_spin_time = time.time()
+            
+            while rclpy.ok():
+                try:
+                    # Process GUI events
+                    self.root.update()
+                    
+                    # Spin ROS2 node periodically (every 50ms)
+                    current_time = time.time()
+                    if current_time - last_spin_time >= 0.05:  # 20 Hz
+                        rclpy.spin_once(self, timeout_sec=0.0)
+                        last_spin_time = current_time
+                        
+                    # Small sleep to prevent busy waiting
+                    time.sleep(0.01)
+                    
+                except tk.TclError:
+                    # GUI was closed
+                    break
+                except Exception as e:
+                    self.get_logger().error(f"Error in main loop: {e}")
+                    break
         
         self.update_status("Pharmacy Dock GUI ready", 'success')
         
-        # Run GUI main loop
+        # Run combined loop
         try:
-            self.root.mainloop()
+            ros_and_gui_loop()
         except KeyboardInterrupt:
             pass
 
     def shutdown(self):
         """Cleanup when shutting down"""
-        self.thread_pool.shutdown(wait=True)
-        self.destroy_node()
+        try:
+            self.thread_pool.shutdown(wait=False)
+            if hasattr(self, 'root'):
+                self.root.quit()
+                self.root.destroy()
+        except Exception as e:
+            self.get_logger().error(f"Error during shutdown: {e}")
+        finally:
+            try:
+                self.destroy_node()
+            except:
+                pass
 
 
 def main(args=None):
     """Main function"""
     rclpy.init(args=args)
     
+    gui = None
     try:
         gui = PharmacyDockGUI()
         gui.run_gui()
     except KeyboardInterrupt:
-        pass
+        print("\nShutting down...")
+    except Exception as e:
+        print(f"Error: {e}")
     finally:
-        if 'gui' in locals():
+        if gui is not None:
             gui.shutdown()
-        rclpy.shutdown()
+        
+        # Only shutdown rclpy if it's still running
+        try:
+            if rclpy.ok():
+                rclpy.shutdown()
+        except Exception:
+            pass  # Already shut down
 
 
 if __name__ == '__main__':
