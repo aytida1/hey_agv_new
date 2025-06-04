@@ -20,7 +20,7 @@ public:
         
         // Timer to publish transforms at 10Hz
         timer_ = this->create_wall_timer(
-            std::chrono::milliseconds(100),
+            std::chrono::milliseconds(30),
             std::bind(&TFPublisher::publishTransforms, this)
         );
         

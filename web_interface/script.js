@@ -12,6 +12,13 @@ class AGVControlCenter {
             agv3: { position: {x: 0, y: 0, z: 0}, orientation: 0, active: false, color: '#f39c12' }
         };
         
+        // Initialize smooth movement tracking
+        this.agvTargetPositions = {
+            agv1: { position: {x: 0, y: 0, z: 0}, orientation: 0 },
+            agv2: { position: {x: 0, y: 0, z: 0}, orientation: 0 },
+            agv3: { position: {x: 0, y: 0, z: 0}, orientation: 0 }
+        };
+        
         // Control settings
         this.linearVelocity = 0.5;
         this.angularVelocity = 1.0;
@@ -35,6 +42,7 @@ class AGVControlCenter {
         this.navActionClients = {};
         this.navigationStatus = 'idle';
         this.currentGoal = null;
+        this.goalCompletionInterval = null;
         
         // Predefined locations
         this.locations = {
@@ -67,6 +75,10 @@ class AGVControlCenter {
         
         // Buffer for /all_transforms data
         this.allTransforms = [];
+        
+        // Smooth movement for AGVs
+        this.smoothMovement = true;
+        this.movementSpeed = 0.1; // Interpolation speed factor (0.1 = 10% per frame)
         
         this.init();
     }
@@ -330,7 +342,12 @@ class AGVControlCenter {
             });
         });
         
-        console.log('✅ Set up publishers for cmd_vel and initialpose topics');
+        // Setup navigation action clients for each AGV
+        Object.keys(this.agvData).forEach(agvId => {
+            this.setupNavigationActionClient(agvId);
+        });
+        
+        console.log('✅ Set up publishers for cmd_vel, initialpose topics and navigation action clients');
     }
     
     handleMapData(mapMsg) {
@@ -418,24 +435,97 @@ class AGVControlCenter {
 
     updateAGVsFromAllTransforms() {
         // Use the transforms as-is, no chaining or filtering
-        // Find AGV base_link transforms and update agvData
+        // Find AGV base_link transforms and update target positions for smooth interpolation
         const agvBaseLinks = {
             agv1: 'agv1/base_link',
             agv2: 'agv2/base_link',
             agv3: 'agv3/base_link'
         };
-        // Reset all AGVs to inactive
+        
+        // Reset all AGVs to inactive first
         Object.keys(this.agvData).forEach(agvId => {
             this.agvData[agvId].active = false;
         });
+        
+        // Update target positions from transform data
         this.allTransforms.forEach(tf => {
             Object.entries(agvBaseLinks).forEach(([agvId, baseLink]) => {
                 if (tf.child_frame_id === baseLink) {
-                    this.agvData[agvId].position = tf.transform.translation;
-                    this.agvData[agvId].orientation = this.quaternionToYaw(tf.transform.rotation);
+                    // Initialize target positions if this AGV is newly detected
+                    if (!this.agvData[agvId].active) {
+                        this.agvData[agvId].position = {
+                            x: tf.transform.translation.x,
+                            y: tf.transform.translation.y,
+                            z: tf.transform.translation.z
+                        };
+                        this.agvData[agvId].orientation = this.quaternionToYaw(tf.transform.rotation);
+                    }
+                    
+                    // Ensure target position object exists
+                    if (!this.agvTargetPositions[agvId]) {
+                        this.agvTargetPositions[agvId] = {
+                            position: { x: 0, y: 0, z: 0 },
+                            orientation: 0
+                        };
+                    }
+                    
+                    // Set target positions for smooth interpolation
+                    this.agvTargetPositions[agvId].position = {
+                        x: tf.transform.translation.x,
+                        y: tf.transform.translation.y,
+                        z: tf.transform.translation.z
+                    };
+                    this.agvTargetPositions[agvId].orientation = this.quaternionToYaw(tf.transform.rotation);
                     this.agvData[agvId].active = true;
                 }
             });
+        });
+        
+        // Smoothly interpolate current positions toward target positions
+        this.updateSmoothMovement();
+    }
+    
+    updateSmoothMovement() {
+        if (!this.smoothMovement) {
+            // If smooth movement is disabled, just copy target positions directly
+            Object.keys(this.agvData).forEach(agvId => {
+                if (this.agvData[agvId].active && this.agvTargetPositions[agvId]) {
+                    this.agvData[agvId].position = { ...this.agvTargetPositions[agvId].position };
+                    this.agvData[agvId].orientation = this.agvTargetPositions[agvId].orientation;
+                }
+            });
+            return;
+        }
+        
+        Object.keys(this.agvData).forEach(agvId => {
+            if (!this.agvData[agvId].active || !this.agvTargetPositions[agvId]) return;
+            
+            const current = this.agvData[agvId];
+            const target = this.agvTargetPositions[agvId];
+            
+            // Smooth interpolation for position
+            current.position.x += (target.position.x - current.position.x) * this.movementSpeed;
+            current.position.y += (target.position.y - current.position.y) * this.movementSpeed;
+            current.position.z += (target.position.z - current.position.z) * this.movementSpeed;
+            
+            // Smooth interpolation for orientation (handle angle wrapping)
+            let angleDiff = target.orientation - current.orientation;
+            
+            // Handle angle wrapping (choose shortest path)
+            if (angleDiff > Math.PI) {
+                angleDiff -= 2 * Math.PI;
+            } else if (angleDiff < -Math.PI) {
+                angleDiff += 2 * Math.PI;
+            }
+            
+            current.orientation += angleDiff * this.movementSpeed;
+            
+            // Normalize orientation to [-π, π]
+            if (current.orientation > Math.PI) {
+                current.orientation -= 2 * Math.PI;
+            } else if (current.orientation < -Math.PI) {
+                current.orientation += 2 * Math.PI;
+            }
         });
     }
     
@@ -717,6 +807,14 @@ class AGVControlCenter {
             this.toggleLaserScans();
         });
         
+        // Smooth movement toggle
+        this.elements.toggleSmooth = document.getElementById('toggleSmooth');
+        if (this.elements.toggleSmooth) {
+            this.elements.toggleSmooth.addEventListener('click', () => {
+                this.toggleSmoothMovement();
+            });
+        }
+        
         // Initial Pose controls
         document.getElementById('setInitialPose').addEventListener('click', () => {
             this.setInitialPose();
@@ -724,6 +822,11 @@ class AGVControlCenter {
         
         // Navigation controls
         this.setupNavigationEventListeners();
+        
+        // Debug navigation button
+        document.getElementById('checkNavDebug').addEventListener('click', () => {
+            this.checkNavigationInterfaces();
+        });
     }
     
     setupNavigationEventListeners() {
@@ -827,6 +930,33 @@ class AGVControlCenter {
         }
         
         console.log(`🔍 Laser scan visualization ${this.showLaserScans ? 'enabled' : 'disabled'}`);
+    }
+    
+    toggleSmoothMovement() {
+        this.smoothMovement = !this.smoothMovement;
+        
+        const button = this.elements.toggleSmooth;
+        if (!button) return;
+        
+        if (this.smoothMovement) {
+            button.innerHTML = '<i class="fas fa-water"></i> Smooth: ON';
+            button.classList.remove('btn-secondary');
+            button.classList.add('btn-primary');
+        } else {
+            button.innerHTML = '<i class="fas fa-square"></i> Smooth: OFF';
+            button.classList.remove('btn-primary');
+            button.classList.add('btn-secondary');
+            
+            // When smooth movement is disabled, immediately snap to target positions
+            Object.keys(this.agvData).forEach(agvId => {
+                if (this.agvData[agvId].active) {
+                    this.agvData[agvId].position = { ...this.agvTargetPositions[agvId].position };
+                    this.agvData[agvId].orientation = this.agvTargetPositions[agvId].orientation;
+                }
+            });
+        }
+        
+        console.log(`🌊 Smooth movement ${this.smoothMovement ? 'enabled' : 'disabled'}`);
     }
     
     startRenderLoop() {
@@ -962,8 +1092,8 @@ class AGVControlCenter {
             this.ctx.translate(x, y);
             // Use orientation as-is (no offset)
             this.ctx.rotate(-agv.orientation);
-            const agvWidth = 0.3 * this.mapScale;
-            const agvHeight = 0.2 * this.mapScale;
+            const agvWidth = 0.6 * this.mapScale;  // Increased from 0.3 to 0.6
+            const agvHeight = 0.4 * this.mapScale; // Increased from 0.2 to 0.4
             this.ctx.fillStyle = agv.color;
             this.ctx.fillRect(-agvWidth/2, -agvHeight/2, agvWidth, agvHeight);
             this.ctx.fillStyle = '#fff';
@@ -1010,8 +1140,8 @@ class AGVControlCenter {
             
             this.ctx.rotate(totalRotation);
             
-            // Draw laser scan points as smaller red dots for obstacles
-            this.ctx.fillStyle = 'rgba(255, 0, 0, 0.9)'; // Bright red for better visibility
+            // Draw laser scan points as smaller blue dots for obstacles
+            this.ctx.fillStyle = 'rgba(52, 152, 219, 0.9)'; // Changed from red to blue for better visibility
             
             for (let i = 0; i < numPoints; i++) {
                 const range = ranges[i];
@@ -1437,15 +1567,26 @@ class AGVControlCenter {
         this.sendNavigationGoal(x, y, yawRadians, 'Custom Goal');
     }
     
+    // Simplified navigation goal sending using goal_pose topic only
     sendNavigationGoal(x, y, yaw, goalName = 'Goal') {
-        if (!this.selectedAgv || !this.isConnected) return;
+        console.log(`🎯 Starting navigation to ${goalName} at (${x.toFixed(2)}, ${y.toFixed(2)}, ${(yaw * 180 / Math.PI).toFixed(1)}°)`);
+        console.log(`🤖 Selected AGV: ${this.selectedAgv}`);
         
-        // Initialize action client if not exists
-        if (!this.navActionClients[this.selectedAgv]) {
-            this.setupNavigationActionClient(this.selectedAgv);
+        if (!this.selectedAgv) {
+            console.error('❌ No AGV selected');
+            alert('Please select an AGV first');
+            return;
         }
         
-        // Create NavigateToPose goal message
+        // Use direct goal_pose topic publishing
+        this.sendNavigationGoalViaTopic(x, y, yaw, goalName);
+        
+        // Start checking for goal completion
+        this.startGoalCompletionChecker();
+    }
+    
+    sendNavigationGoalInternal(x, y, yaw, goalName = 'Goal') {
+        // Create NavigateToPose goal message (fixed structure)
         const goal = new ROSLIB.Message({
             pose: {
                 header: {
@@ -1483,37 +1624,221 @@ class AGVControlCenter {
         this.updateNavigationProgress(0);
         this.elements.cancelGoal.style.display = 'inline-block';
         
+        // Check if action client is ready
+        console.log('🔍 Action client status:', this.navActionClients[this.selectedAgv]);
+        
         // Send goal
         const actionGoal = new ROSLIB.Goal({
             actionClient: this.navActionClients[this.selectedAgv],
             goalMessage: goal
         });
         
+        // Add comprehensive debugging
+        actionGoal.on('status', (status) => {
+            console.log('🔄 Navigation goal status:', status);
+        });
+        
         actionGoal.on('feedback', (feedback) => {
+            console.log('📡 Navigation feedback received:', feedback);
             this.handleNavigationFeedback(feedback);
         });
         
         actionGoal.on('result', (result) => {
+            console.log('🏁 Navigation result received:', result);
             this.handleNavigationResult(result);
         });
         
+        actionGoal.on('timeout', () => {
+            console.log('🕐 Navigation goal timed out');
+            this.showNavigationStatus('Navigation goal timed out', 'error');
+            this.navigationStatus = 'idle';
+            this.currentActionGoal = null;
+            this.elements.cancelGoal.style.display = 'none';
+        });
+        
+        actionGoal.on('error', (error) => {
+            console.error('❌ Navigation goal error:', error);
+            this.showNavigationStatus(`Navigation error: ${error}`, 'error');
+            this.navigationStatus = 'idle';
+            this.currentActionGoal = null;
+            this.elements.cancelGoal.style.display = 'none';
+        });
+        
+        // Add sent event handler
+        actionGoal.on('sent', () => {
+            console.log('📤 Navigation goal successfully sent to action server');
+        });
+        
+        console.log('🚀 Sending navigation goal...');
         actionGoal.send();
+        console.log('✅ Navigation goal send() called successfully');
+        
+        // Add a timeout check
+        setTimeout(() => {
+            if (this.navigationStatus === 'active' && this.currentActionGoal === actionGoal) {
+                console.log('⚠️ No response from action server after 1 seconds');
+                console.log('🔍 Action client connected:', this.navActionClients[this.selectedAgv].isConnected);
+            }
+        }, 1000);
         
         // Store action goal for cancellation
         this.currentActionGoal = actionGoal;
         
         console.log(`📤 Navigation goal sent to ${this.selectedAgv}: ${goalName} at (${x.toFixed(2)}, ${y.toFixed(2)}, ${(yaw * 180 / Math.PI).toFixed(1)}°)`);
+        console.log('🔍 Goal message:', JSON.stringify(goal, null, 2));
+    }
+    
+    sendNavigationGoalViaTopic(x, y, yaw, goalName = 'Goal') {
+        console.log('🔄 Using fallback method: direct topic publishing');
+        
+        // Create geometry_msgs/PoseStamped message for /move_base_simple/goal topic
+        const poseStamped = new ROSLIB.Message({
+            header: {
+                frame_id: 'map',
+                stamp: {
+                    sec: Math.floor(Date.now() / 1000),
+                    nanosec: (Date.now() % 1000) * 1000000
+                }
+            },
+            pose: {
+                position: {
+                    x: x,
+                    y: y,
+                    z: 0.0
+                },
+                orientation: this.yawToQuaternion(yaw)
+            }
+        });
+        
+        // Create publisher for simple goal topic
+        const goalTopic = new ROSLIB.Topic({
+            ros: this.ros,
+            name: `/${this.selectedAgv}/goal_pose`,
+            messageType: 'geometry_msgs/PoseStamped'
+        });
+        
+        // Publish the goal
+        console.log('📤 Publishing navigation goal to topic:', `/${this.selectedAgv}/goal_pose`);
+        goalTopic.publish(poseStamped);
+        
+        // Store current goal info
+        this.currentGoal = {
+            x: x,
+            y: y,
+            yaw: yaw,
+            name: goalName,
+            agv: this.selectedAgv,
+            startTime: Date.now()
+        };
+        
+        // Update UI
+        this.navigationStatus = 'active';
+        this.showNavigationStatus(`Navigating to ${goalName} (via topic)...`, 'active');
+        this.updateNavigationProgress(0);
+        this.elements.cancelGoal.style.display = 'inline-block';
+        
+        console.log(`📤 Navigation goal sent via topic to ${this.selectedAgv}: ${goalName} at (${x.toFixed(2)}, ${y.toFixed(2)}, ${(yaw * 180 / Math.PI).toFixed(1)}°)`);
+    }
+    
+    startGoalCompletionChecker() {
+        // Clear any existing checker
+        if (this.goalCompletionInterval) {
+            clearInterval(this.goalCompletionInterval);
+        }
+        
+        // Check goal completion every 100ms for smooth progress updates
+        this.goalCompletionInterval = setInterval(() => {
+            this.checkGoalCompletion();
+        }, 100);
+        
+        console.log('🔄 Started goal completion checker');
+    }
+    
+    checkGoalCompletion() {
+        if (!this.currentGoal || !this.selectedAgv || !this.agvData[this.selectedAgv].active) {
+            return;
+        }
+        
+        const agv = this.agvData[this.selectedAgv];
+        const goalX = this.currentGoal.x;
+        const goalY = this.currentGoal.y;
+        const goalYaw = this.currentGoal.yaw;
+        const currentX = agv.position.x;
+        const currentY = agv.position.y;
+        const currentYaw = agv.orientation;
+        
+        // Calculate distance to goal
+        const distanceToGoal = Math.sqrt(
+            Math.pow(goalX - currentX, 2) + Math.pow(goalY - currentY, 2)
+        );
+        
+        // Calculate yaw difference (handle wrap-around)
+        let yawDiff = Math.abs(goalYaw - currentYaw);
+        if (yawDiff > Math.PI) {
+            yawDiff = 2 * Math.PI - yawDiff;
+        }
+        const yawDiffDegrees = yawDiff * 180 / Math.PI;
+        
+        // Store initial distance for progress calculation
+        if (!this.currentGoal.initialDistance) {
+            this.currentGoal.initialDistance = Math.max(distanceToGoal, 0.1); // Minimum 0.1m to avoid division by zero
+        }
+        
+        // Calculate progress percentage
+        const progress = Math.max(0, Math.min(100, 
+            (1 - distanceToGoal / this.currentGoal.initialDistance) * 100
+        ));
+        
+        this.updateNavigationProgress(progress);
+        
+        // Update status with distance info
+        this.showNavigationStatus(
+            `Navigating to ${this.currentGoal.name}... (${distanceToGoal.toFixed(1)}m, ${yawDiffDegrees.toFixed(1)}° remaining)`,
+            'active'
+        );
+        
+        // Check if goal is reached (0.05m position tolerance, 1 degree yaw tolerance)
+        const positionTolerance = 0.05; // 5cm
+        const yawToleranceDegrees = 1.0;  // 1 degree
+        
+        if (distanceToGoal <= positionTolerance && yawDiffDegrees <= yawToleranceDegrees) {
+            console.log(`🎯 Goal reached! Distance: ${distanceToGoal.toFixed(3)}m, Yaw diff: ${yawDiffDegrees.toFixed(1)}°`);
+            this.handleGoalReached();
+        }
+    }
+    
+    handleGoalReached() {
+        // Clear the completion checker
+        if (this.goalCompletionInterval) {
+            clearInterval(this.goalCompletionInterval);
+            this.goalCompletionInterval = null;
+        }
+        
+        // Reset navigation state
+        this.navigationStatus = 'idle';
+        this.elements.cancelGoal.style.display = 'none';
+        
+        // Show success message
+        this.showNavigationStatus(
+            `✅ Successfully reached ${this.currentGoal.name}!`,
+            'success'
+        );
+        this.updateNavigationProgress(100);
+        
+        // Auto-hide success message after 3 seconds
+        setTimeout(() => {
+            this.hideNavigationStatus();
+        }, 3000);
+        
+        // Clear current goal
+        this.currentGoal = null;
+        
+        console.log('🏁 Navigation completed successfully');
     }
     
     setupNavigationActionClient(agvId) {
-        // Create action client for NavigateToPose action
-        this.navActionClients[agvId] = new ROSLIB.ActionClient({
-            ros: this.ros,
-            serverName: `/${agvId}/navigate_to_pose`,
-            actionName: 'nav2_msgs/NavigateToPose'
-        });
-        
-        console.log(`🔧 Navigation action client set up for ${agvId}`);
+        // Simplified setup - no longer using action clients, kept for compatibility
+        console.log(`🔧 Navigation setup for ${agvId} (using topic-based approach)`);
     }
     
     handleNavigationFeedback(feedback) {
@@ -1561,25 +1886,42 @@ class AGVControlCenter {
         this.elements.cancelGoal.style.display = 'none';
         
         // Check result and show appropriate message
-        if (result && result.result && result.result.result && result.result.result === 1) {
-            // Success (nav2_msgs/NavigateToPose result codes: 1 = success)
-            this.showNavigationStatus(
-                `✅ Successfully reached ${this.currentGoal.name}!`,
-                'success'
-            );
-            this.updateNavigationProgress(100);
-            
-            // Auto-hide success message after 3 seconds
-            setTimeout(() => {
-                this.hideNavigationStatus();
-            }, 3000);
+        if (result && result.error_code !== undefined) {
+            if (result.error_code === 0) {
+                // Success (nav2_msgs/NavigateToPose result codes: 0 = NONE/success)
+                this.showNavigationStatus(
+                    `✅ Successfully reached ${this.currentGoal.name}!`,
+                    'success'
+                );
+                this.updateNavigationProgress(100);
+                
+                // Auto-hide success message after 3 seconds
+                setTimeout(() => {
+                    this.hideNavigationStatus();
+                }, 3000);
+            } else {
+                // Failure with error code
+                const errorMsg = result.error_msg || `Error code: ${result.error_code}`;
+                this.showNavigationStatus(
+                    `❌ Navigation to ${this.currentGoal.name} failed: ${errorMsg}`,
+                    'error'
+                );
+                this.updateNavigationProgress(0);
+                
+                // Auto-hide error message after 5 seconds
+                setTimeout(() => {
+                    this.hideNavigationStatus();
+                }, 5000);
+            }
         } else {
-            // Failure or other result
+            // Unknown result format
             this.showNavigationStatus(
-                `❌ Navigation to ${this.currentGoal.name} failed`,
+                `❌ Navigation to ${this.currentGoal.name} failed (unknown result)`,
                 'error'
             );
             this.updateNavigationProgress(0);
+            
+            console.log('Navigation result:', result);
             
             // Auto-hide error message after 5 seconds
             setTimeout(() => {
@@ -1592,26 +1934,33 @@ class AGVControlCenter {
     }
     
     cancelNavigation() {
+        console.log('🛑 Cancelling navigation...');
+        
+        // Clear goal completion checker
+        if (this.goalCompletionInterval) {
+            clearInterval(this.goalCompletionInterval);
+            this.goalCompletionInterval = null;
+        }
+        
+        // Cancel action goal if exists
         if (this.currentActionGoal) {
-            console.log('🛑 Cancelling navigation...');
-            
             this.currentActionGoal.cancel();
             this.currentActionGoal = null;
-            
-            // Update UI
-            this.navigationStatus = 'idle';
-            this.showNavigationStatus('Navigation cancelled', 'warning');
-            this.updateNavigationProgress(0);
-            this.elements.cancelGoal.style.display = 'none';
-            
-            // Clear current goal
-            this.currentGoal = null;
-            
-            // Auto-hide message after 3 seconds
-            setTimeout(() => {
-                this.hideNavigationStatus();
-            }, 3000);
         }
+        
+        // Update UI
+        this.navigationStatus = 'idle';
+        this.showNavigationStatus('Navigation cancelled', 'warning');
+        this.updateNavigationProgress(0);
+        this.elements.cancelGoal.style.display = 'none';
+        
+        // Clear current goal
+        this.currentGoal = null;
+        
+        // Auto-hide message after 3 seconds
+        setTimeout(() => {
+            this.hideNavigationStatus();
+        }, 3000);
     }
     
     showNavigationStatus(message, type = 'info') {
@@ -1623,7 +1972,10 @@ class AGVControlCenter {
     }
     
     hideNavigationStatus() {
-        this.elements.navStatus.style.display = 'none';
+        // Reset to default "Ready" state when navigation completes
+        this.elements.navStatus.textContent = 'Ready';
+        this.elements.navStatus.className = 'nav-status status-idle';
+        this.elements.navStatus.style.display = 'block';
     }
     
     updateNavigationProgress(percentage) {
@@ -1635,13 +1987,17 @@ class AGVControlCenter {
         // Show/hide progress bar based on navigation status
         if (this.navigationStatus === 'active' && progress > 0) {
             this.elements.navProgress.style.display = 'block';
-        } else if (this.navigationStatus === 'idle' || progress >= 100) {
-            // Keep visible briefly for success/completion, then hide
-            setTimeout(() => {
-                if (this.navigationStatus === 'idle') {
+        } else if (this.navigationStatus === 'idle') {
+            // When navigation is idle, hide progress bar immediately for better UX
+            if (progress >= 100) {
+                // Keep visible briefly for success/completion, then hide
+                setTimeout(() => {
                     this.elements.navProgress.style.display = 'none';
-                }
-            }, 2000);
+                }, 2000);
+            } else {
+                // Hide immediately for cancelled or failed navigation
+                this.elements.navProgress.style.display = 'none';
+            }
         }
     }
     
@@ -1672,6 +2028,52 @@ class AGVControlCenter {
     }
     
     // ==================== END NAVIGATION METHODS ====================
+    
+    // Debug method to check available navigation interfaces
+    checkNavigationInterfaces() {
+        console.log('🔍 Checking available navigation interfaces...');
+        
+        // Check available topics
+        this.ros.getTopics((topics) => {
+            console.log('📋 Available topics:', topics);
+            const navTopics = topics.filter(topic => 
+                topic.includes('navigate') || 
+                topic.includes('move_base') || 
+                topic.includes('goal') ||
+                topic.includes('cmd_vel')
+            );
+            console.log('🎯 Navigation-related topics:', navTopics);
+        });
+        
+        // Check available action servers
+        this.ros.getActionServers((servers) => {
+            console.log('🎭 Available action servers:', servers);
+            const navServers = servers.filter(server => 
+                server.includes('navigate') || 
+                server.includes('move_base')
+            );
+            console.log('🎯 Navigation-related action servers:', navServers);
+        });
+        
+        // Check if our specific action server exists
+        const testClient = new ROSLIB.ActionClient({
+            ros: this.ros,
+            serverName: `/${this.selectedAgv}/navigate_to_pose`,
+            actionName: 'nav2_msgs/NavigateToPose'
+        });
+        
+        testClient.on('connect', () => {
+            console.log(`✅ Action server /${this.selectedAgv}/navigate_to_pose is available`);
+        });
+        
+        testClient.on('error', (error) => {
+            console.error(`❌ Action server /${this.selectedAgv}/navigate_to_pose error:`, error);
+        });
+        
+        setTimeout(() => {
+            console.log(`🔍 Test action client connected: ${testClient.isConnected}`);
+        }, 2000);
+    }
 }
 
 // Initialize the AGV Control Center when the page loads
