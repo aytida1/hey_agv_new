@@ -5,7 +5,6 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
-#include <tf2/time.h>
 
 #include <iostream>
 #include <vector>
@@ -27,7 +26,6 @@ public:
         angle_increment_ = 0.00348f;
         num_points_ = static_cast<int>((angle_max_ - angle_min_) / angle_increment_) + 1;
 
-        // Get the namespace from the node
         std::string node_namespace = get_namespace();
         if (node_namespace == "/") {
             robot_namespace_ = "";
@@ -109,7 +107,6 @@ private:
     rclcpp::Time last_scan1_time_;
     rclcpp::Time last_scan2_time_;
 
-    // Frame names
     std::string robot_namespace_;
     std::string base_frame_;
     std::string lidar_right_frame_;
@@ -144,16 +141,14 @@ std::vector<std::pair<float, float>> ScanMergerV2::laserscan_to_point(const sens
     std::vector<std::pair<float, float>> points;
 
     try {
-        // Use the lidar_frame parameter directly instead of scan_msg->header.frame_id
-        // since the scan message frame IDs don't match the TF tree structure
+        // Use the exact scan timestamp with longer timeout for reliability
         geometry_msgs::msg::TransformStamped transform = tf_buffer_.lookupTransform(
             base_frame_,
-            lidar_frame,  // Use the corrected frame name from constructor
-            rclcpp::Time(0),  // Get latest available transform
+            lidar_frame,
+            scan_msg->header.stamp,
             rclcpp::Duration::from_seconds(0.1)  // Increased timeout for better reliability
         );
 
-        // RCLCPP_INFO(get_logger(), "%s - %s", base_frame_, lidar_frame);
         // Extract translation and rotation
         float tx = transform.transform.translation.x;
         float ty = transform.transform.translation.y;
@@ -187,9 +182,7 @@ std::vector<std::pair<float, float>> ScanMergerV2::laserscan_to_point(const sens
 
     }
     catch (const tf2::TransformException &e) {
-        // Log the actual error for debugging
-        RCLCPP_WARN_THROTTLE(this->get_logger(), *get_clock(), 5000, 
-            "Transform failed from %s to %s: %s", base_frame_.c_str(), lidar_frame.c_str(), e.what());
+        // Silently skip if transform not available to avoid lag
         return points;
     }
 
@@ -248,7 +241,7 @@ void ScanMergerV2::process_and_publish_scans(){
 
     sensor_msgs::msg::LaserScan combined_scan;
     combined_scan.header.stamp = sync_time;  // Use synchronized timestamp
-    combined_scan.header.frame_id = base_frame_;  // Use namespaced base frame
+    combined_scan.header.frame_id = base_frame_;
     combined_scan.angle_increment = angle_increment_;
     combined_scan.angle_min = angle_min_;
     combined_scan.angle_max = angle_max_;

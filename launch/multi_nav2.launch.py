@@ -117,7 +117,7 @@ def generate_launch_description():
         nav_config = os.path.join(
             get_package_share_directory('hey_agv_new'),
             'config',
-            'nav2_params.yaml'
+            'multi_nav2_params.yaml'
         )
 
         # AMCL node for this AGV
@@ -280,7 +280,13 @@ def generate_launch_description():
                 GroupAction([
                     SetParameter('use_sim_time', use_sim_time),
                     amcl_node,
-                    lifecycle_manager
+                    controller_server,
+                    planner_server,
+                    behavior_server,
+                    bt_navigator,
+                    waypoint_follower,
+                    velocity_smoother,
+                     lifecycle_manager
                 ])
             ]
         )

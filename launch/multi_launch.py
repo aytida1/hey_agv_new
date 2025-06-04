@@ -317,12 +317,21 @@ def generate_launch_description():
         description='Launch the ROS-GZ bridge (set to false if running separately)'
     )
     
+    # TF publisher node (C++)
+    tf_publisher_node = Node(
+        package='hey_agv_new',
+        executable='tf_publisher',
+        name='tf_publisher',
+        output='screen'
+    )
+
     # Create launch description with all components
     launch_entities = [
         declare_use_sim_time,
         declare_launch_bridge,
         gazebo,
         TimerAction(period=4.0, actions=[bridge]),  # Reduced bridge delay
+        tf_publisher_node,
     ]
     
     # Add all AGV nodes with proper sequencing

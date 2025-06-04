@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGV Control Center</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-robot"></i> AGV Control Center</h1>
+                <div class="connection-status">
+                    <span id="connectionStatus" class="status-disconnected">
+                        <i class="fas fa-circle"></i> Disconnected
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <div class="panel-section">
+                <h3><i class="fas fa-cogs"></i> AGV Selection</h3>
+                <select id="agvSelector" class="agv-selector">
+                    <option value="">Select AGV...</option>
+                    <option value="agv1">AGV-1</option>
+                    <option value="agv2">AGV-2</option>
+                    <option value="agv3">AGV-3</option>
+                </select>
+                <div class="agv-status" id="agvStatus">
+                    <span class="status-inactive">No AGV Selected</span>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3><i class="fas fa-gamepad"></i> Controls</h3>
+                <div class="control-info">
+                    <p><strong>Keyboard Controls:</strong></p>
+                    <div class="key-mapping">
+                        <span class="key">W/↑</span> Forward
+                        <span class="key">S/↓</span> Backward
+                        <span class="key">A/←</span> Turn Left
+                        <span class="key">D/→</span> Turn Right
+                        <span class="key">Space</span> Stop
+                    </div>
+                </div>
+                <div class="velocity-controls">
+                    <label for="linearVel">Linear Speed: <span id="linearValue">0.5</span> m/s</label>
+                    <input type="range" id="linearVel" min="0.1" max="2.0" step="0.1" value="0.5">
+                    
+                    <label for="angularVel">Angular Speed: <span id="angularValue">1.0</span> rad/s</label>
+                    <input type="range" id="angularVel" min="0.1" max="3.0" step="0.1" value="1.0">
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3><i class="fas fa-info-circle"></i> AGV Info</h3>
+                <div class="agv-info">
+                    <div class="info-row">
+                        <span>Position:</span>
+                        <span id="agvPosition">- , -</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Orientation:</span>
+                        <span id="agvOrientation">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Battery:</span>
+                        <span id="agvBattery">100%</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Status:</span>
+                        <span id="agvOperationStatus">Idle</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3><i class="fas fa-map-marker-alt"></i> Initial Pose</h3>
+                <div class="initial-pose-controls">
+                    <div class="pose-input-group">
+                        <label for="initialX">X Position (m):</label>
+                        <input type="number" id="initialX" step="0.1" value="0.0" class="pose-input">
+                    </div>
+                    <div class="pose-input-group">
+                        <label for="initialY">Y Position (m):</label>
+                        <input type="number" id="initialY" step="0.1" value="0.0" class="pose-input">
+                    </div>
+                    <div class="pose-input-group">
+                        <label for="initialYaw">Yaw Angle (degrees):</label>
+                        <input type="number" id="initialYaw" step="5" value="0" class="pose-input">
+                    </div>
+                    <button id="setInitialPose" class="btn btn-primary initial-pose-btn">
+                        <i class="fas fa-crosshairs"></i> Set Initial Pose
+                    </button>
+                    <div class="pose-status" id="poseStatus" style="display: none;">
+                        <span class="status-success">Initial pose set successfully!</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3><i class="fas fa-route"></i> Navigation Control</h3>
+                <div class="navigation-controls">
+                    <!-- Predefined Locations -->
+                    <div class="locations-section">
+                        <h4><i class="fas fa-map-pin"></i> Quick Locations</h4>
+                        <div class="location-buttons">
+                            <button class="location-btn" data-location="home">
+                                <i class="fas fa-home"></i> Home
+                            </button>
+                            <button class="location-btn" data-location="dock1">
+                                <i class="fas fa-charging-station"></i> Dock 1
+                            </button>
+                            <button class="location-btn" data-location="dock2">
+                                <i class="fas fa-charging-station"></i> Dock 2
+                            </button>
+                            <button class="location-btn" data-location="dock3">
+                                <i class="fas fa-charging-station"></i> Dock 3
+                            </button>
+                            <button class="location-btn" data-location="dock4">
+                                <i class="fas fa-charging-station"></i> Dock 4
+                            </button>
+                            <button class="location-btn" data-location="center">
+                                <i class="fas fa-crosshairs"></i> Center
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Custom Goal -->
+                    <div class="custom-goal-section">
+                        <h4><i class="fas fa-bullseye"></i> Custom Goal</h4>
+                        <div class="goal-input-group">
+                            <label for="goalX">X Position (m):</label>
+                            <input type="number" id="goalX" step="0.1" value="0.0" class="goal-input">
+                        </div>
+                        <div class="goal-input-group">
+                            <label for="goalY">Y Position (m):</label>
+                            <input type="number" id="goalY" step="0.1" value="0.0" class="goal-input">
+                        </div>
+                        <div class="goal-input-group">
+                            <label for="goalYaw">Yaw Angle (degrees):</label>
+                            <input type="number" id="goalYaw" step="5" value="0" class="goal-input">
+                        </div>
+                        <button id="sendGoal" class="btn btn-success goal-btn">
+                            <i class="fas fa-paper-plane"></i> Send Goal
+                        </button>
+                    </div>
+
+                    <!-- Navigation Status -->
+                    <div class="nav-status-section">
+                        <h4><i class="fas fa-info-circle"></i> Navigation Status</h4>
+                        <div class="nav-status" id="navStatus">
+                            <span class="status-idle">Ready</span>
+                        </div>
+                        <div class="nav-progress" id="navProgress" style="display: none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <span class="progress-text" id="progressText">0%</span>
+                        </div>
+                        <div class="nav-actions">
+                            <button id="cancelGoal" class="btn btn-warning" style="display: none;">
+                                <i class="fas fa-stop"></i> Cancel Navigation
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div class="map-container">
+            <div class="map-header">
+                <h3><i class="fas fa-map"></i> Real-time Map View</h3>
+                <div class="map-controls">
+                    <button id="resetView" class="btn btn-secondary">
+                        <i class="fas fa-home"></i> Reset View
+                    </button>
+                    <button id="followAgv" class="btn btn-primary">
+                        <i class="fas fa-crosshairs"></i> Follow AGV
+                    </button>
+                    <button id="toggleLaser" class="btn btn-secondary">
+                        <i class="fas fa-eye"></i> Hide Laser
+                    </button>
+                </div>
+            </div>
+            <div id="mapCanvas" class="map-canvas">
+                <canvas id="mapDisplay"></canvas>
+                <div class="map-overlay">
+                    <div class="zoom-controls">
+                        <button id="zoomIn" class="zoom-btn"><i class="fas fa-plus"></i></button>
+                        <button id="zoomOut" class="zoom-btn"><i class="fas fa-minus"></i></button>
+                    </div>
+                    <div class="map-legend">
+                        <div class="legend-item">
+                            <div class="legend-color agv1-color"></div>
+                            <span>AGV-1</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color agv2-color"></div>
+                            <span>AGV-2</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color agv3-color"></div>
+                            <span>AGV-3</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color obstacle-color"></div>
+                            <span>Map Obstacles</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color laser-obstacle-color"></div>
+                            <span>Laser Obstacles</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-item">
+                <i class="fas fa-wifi"></i>
+                <span id="rosStatus">ROS: Disconnected</span>
+            </div>
+            <div class="status-item">
+                <i class="fas fa-clock"></i>
+                <span id="lastUpdate">Last Update: Never</span>
+            </div>
+            <div class="status-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span id="updateRate">Rate: 0 Hz</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <i class="fas fa-robot fa-spin"></i>
+            <h2>Connecting to AGV System...</h2>
+            <p id="loadingMessage">Establishing connection to ROS bridge</p>
+            <div class="connection-steps">
+                <div class="step" id="rosbridgeStep">
+                    <i class="fas fa-circle-notch fa-spin"></i> Starting ROSBridge Server...
+                </div>
+                <div class="step" id="websocketStep">
+                    <i class="fas fa-circle-notch fa-spin"></i> Connecting to WebSocket...
+                </div>
+                <div class="step" id="topicsStep">
+                    <i class="fas fa-circle-notch fa-spin"></i> Setting up ROS Topics...
+                </div>
+            </div>
+            <button id="retryConnection" class="retry-btn" style="display: none;">
+                <i class="fas fa-redo"></i> Retry Connection
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="roslib.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

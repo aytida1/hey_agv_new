@@ -1,4 +1,7 @@
-agv1/amcl:
+# Base configuration template that can be reused for any AGV
+# Uses placeholders that get replaced by RewrittenYaml
+
+amcl:
   ros__parameters:
     # Reduced motion noise for better precision
     alpha1: 0.05  # Rotation noise from rotation
@@ -7,7 +10,7 @@ agv1/amcl:
     alpha4: 0.05  # Translation noise from rotation
     alpha5: 0.02  # Translation noise
     
-    base_frame_id: "agv1/base_link"
+    base_frame_id: "<robot_namespace>/base_link"
     
     # Enable beam skipping for robustness against dynamic obstacles
     beam_skip_distance: 0.5
@@ -31,7 +34,7 @@ agv1/amcl:
     max_particles: 2000  # Reduced for better performance
     min_particles: 500   # Increased minimum for stability
     
-    odom_frame_id: "agv1/odom"
+    odom_frame_id: "<robot_namespace>/odom"
     
     # Tighter particle filter parameters for precision
     pf_err: 0.01  # Reduced for higher precision requirement
@@ -55,10 +58,6 @@ agv1/amcl:
     message_timeout_margin: 1.0  # Increase message timeout margin
     tf_buffer_duration: 30.0  # Increase TF buffer to 30 seconds
     
-    # Reduce message filter spam and improve transform handling
-    # message_timeout_margin: 0.5  # Add margin for message timing
-    # tf_buffer_duration: 10.0  # Increase TF buffer duration
-    
     # More frequent updates for faster response
     update_min_a: 0.1   # Reduced for more frequent angular updates
     update_min_d: 0.1   # Reduced for more frequent translational updates
@@ -70,110 +69,6 @@ agv1/amcl:
     z_short: 0.08 # Slightly increased for obstacle handling
     
     scan_topic: scan
-    
-    # Additional parameters for improved performance
-    # initial_pose_x: -3.93
-    # initial_pose_y: -15.984
-    # initial_pose_a: 0.0
-    # initial_cov_xx: 0.25
-    # initial_cov_yy: 0.25
-    # initial_cov_aa: 0.1
-    
-    # Set selective resampling threshold
-    selective_resampling: true
-    
-    # Force update on first message
-    first_map_only: false
-    
-    # Improved KLD sampling parameters
-    kld_err: 0.01
-    kld_z: 0.99
-
-    set_initial_pose: false
-    
-    # Set max particle weight for numerical stability
-    max_weight_ratio: 1000.0
-
-agv2/amcl:
-  ros__parameters:
-    # Reduced motion noise for better precision
-    alpha1: 0.05  # Rotation noise from rotation
-    alpha2: 0.05  # Rotation noise from translation  
-    alpha3: 0.05  # Translation noise from translation
-    alpha4: 0.05  # Translation noise from rotation
-    alpha5: 0.02  # Translation noise
-    
-    base_frame_id: "agv2/base_link"
-    
-    # Enable beam skipping for robustness against dynamic obstacles
-    beam_skip_distance: 0.5
-    beam_skip_error_threshold: 0.5  # Lower for more aggressive skipping
-    beam_skip_threshold: 0.3
-    do_beamskip: true  # Enable for better handling of unexpected obstacles
-    
-    global_frame_id: "map"
-    lambda_short: 0.1
-    
-    # Improved laser model parameters
-    laser_likelihood_max_dist: 4.0  # Increased for better long-range matching
-    laser_max_range: 100.0
-    laser_min_range: -1.0
-    laser_model_type: "likelihood_field"
-    
-    # Increased beams for better precision
-    max_beams: 120  # Double the beams for higher accuracy
-    
-    # Optimized particle count for speed vs accuracy balance
-    max_particles: 2000  # Reduced for better performance
-    min_particles: 500   # Increased minimum for stability
-    
-    odom_frame_id: "agv2/odom"
-    
-    # Tighter particle filter parameters for precision
-    pf_err: 0.01  # Reduced for higher precision requirement
-    pf_z: 0.99
-    
-    # Enable adaptive resampling for faster convergence
-    recovery_alpha_fast: 0.1   # Enable fast recovery
-    recovery_alpha_slow: 0.001 # Enable slow recovery
-    
-    resample_interval: 1
-    robot_model_type: "nav2_amcl::DifferentialMotionModel"
-    save_pose_rate: 2.0  # Increased for more frequent pose updates
-    
-    # Improved sensor model parameters
-    sigma_hit: 0.1  # Reduced for more precise laser matching
-    
-    tf_broadcast: true
-    transform_tolerance: 2.0  # Increased to 2 seconds for timing tolerance
-    
-    # Fix timestamp synchronization issues
-    message_timeout_margin: 1.0  # Increase message timeout margin
-    tf_buffer_duration: 30.0  # Increase TF buffer to 30 seconds
-    
-    # Reduce message filter spam and improve transform handling
-    # message_timeout_margin: 0.5  # Add margin for message timing
-    # tf_buffer_duration: 10.0  # Increase TF buffer duration
-    
-    # More frequent updates for faster response
-    update_min_a: 0.1   # Reduced for more frequent angular updates
-    update_min_d: 0.1   # Reduced for more frequent translational updates
-    
-    # Optimized sensor model weights for precision
-    z_hit: 0.8    # Increased weight on good hits
-    z_max: 0.02   # Reduced weight on max range readings
-    z_rand: 0.1   # Reduced random noise weight
-    z_short: 0.08 # Slightly increased for obstacle handling
-    
-    scan_topic: scan
-    
-    # Additional parameters for improved performance
-    # initial_pose_x: -3.93
-    # initial_pose_y: -15.984
-    # initial_pose_a: 0.0
-    # initial_cov_xx: 0.25
-    # initial_cov_yy: 0.25
-    # initial_cov_aa: 0.1
     
     # Set selective resampling threshold
     selective_resampling: true
@@ -193,7 +88,7 @@ agv2/amcl:
 bt_navigator:
   ros__parameters:
     global_frame: map
-    robot_base_frame: base_link
+    robot_base_frame: <robot_namespace>/base_link
     odom_topic: odom
     bt_loop_duration: 10
     default_server_timeout: 20
@@ -204,14 +99,6 @@ bt_navigator:
       plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
     navigate_through_poses:
       plugin: "nav2_bt_navigator::NavigateThroughPosesNavigator"
-    # 'default_nav_through_poses_bt_xml' and 'default_nav_to_pose_bt_xml' are use defaults:
-    # nav2_bt_navigator/navigate_to_pose_w_replanning_and_recovery.xml
-    # nav2_bt_navigator/navigate_through_poses_w_replanning_and_recovery.xml
-    # They can be set here or via a RewrittenYaml remap from a parent launch file to Nav2.
-
-    # plugin_lib_names is used to add custom BT plugins to the executor (vector of strings).
-    # Built-in plugins are added automatically
-    # plugin_lib_names: []
 
     error_code_names:
       - compute_path_error_code
@@ -226,26 +113,21 @@ controller_server:
     min_theta_velocity_threshold: 0.001
     failure_tolerance: 0.3
     progress_checker_plugins: ["progress_checker"]
-    goal_checker_plugins: ["general_goal_checker"] # "precise_goal_checker"
+    goal_checker_plugins: ["general_goal_checker"]
     controller_plugins: ["FollowPath"]
     use_realtime_priority: false
 
-    # Progress checker parameters
     progress_checker:
       plugin: "nav2_controller::SimpleProgressChecker"
       required_movement_radius: 0.5
       movement_time_allowance: 10.0
-    # Goal checker parameters
-    #precise_goal_checker:
-    #  plugin: "nav2_controller::SimpleGoalChecker"
-    #  xy_goal_tolerance: 0.25
-    #  yaw_goal_tolerance: 0.25
-    #  stateful: True
+
     general_goal_checker:
       stateful: True
       plugin: "nav2_controller::SimpleGoalChecker"
       xy_goal_tolerance: 0.05
       yaw_goal_tolerance: 0.01
+
     FollowPath:
       plugin: "nav2_rotation_shim_controller::RotationShimController"
       primary_controller: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
@@ -278,102 +160,14 @@ controller_server:
       rotate_to_heading_min_angle: 0.785
       max_robot_pose_search_dist: 10.0
       stateful: true
-      # plugin: "nav2_rotation_shim_controller::RotationShimController"
-      # time_steps: 56
-      # model_dt: 0.05
-      # batch_size: 2000
-      # ax_max: 3.0
-      # ax_min: -3.0
-      # ay_max: 3.0
-      # az_max: 3.5
-      # vx_std: 2.0
-      # vy_std: 0.2
-      # wz_std: 0.4
-      # vx_max: 3.0
-      # vx_min: 0.0
-      # vy_max: 3.0
-      # wz_max: 1.9
-      # iteration_count: 1
-      # prune_distance: 1.7
-      # transform_tolerance: 0.1
-      # temperature: 0.3
-      # gamma: 0.015
-      # motion_model: "DiffDrive"
-      # visualize: true
-      # regenerate_noises: true
-      # TrajectoryVisualizer:
-      #   trajectory_step: 5
-      #   time_step: 3
-      # AckermannConstraints:
-      #   min_turning_r: 0.02
-      # critics: [
-      #   "ConstraintCritic", "CostCritic", "GoalCritic",
-      #   "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic",
-      #   "PathAngleCritic", "PreferForwardCritic"]
-      # ConstraintCritic:
-      #   enabled: true
-      #   cost_power: 1
-      #   cost_weight: 4.0
-      # GoalCritic:
-      #   enabled: true
-      #   cost_power: 1
-      #   cost_weight: 5.0
-      #   threshold_to_consider: 1.4
-      # GoalAngleCritic:
-      #   enabled: true
-      #   cost_power: 1
-      #   cost_weight: 3.0
-      #   threshold_to_consider: 0.5
-      # PreferForwardCritic:
-      #   enabled: true
-      #   cost_power: 1
-      #   cost_weight: 5.0
-      #   threshold_to_consider: 0.5
-      # CostCritic:
-      #   enabled: true
-      #   cost_power: 1
-      #   cost_weight: 3.81
-      #   near_collision_cost: 253
-      #   critical_cost: 300.0
-      #   consider_footprint: false
-      #   collision_cost: 1000000.0
-      #   near_goal_distance: 1.0
-      #   trajectory_point_step: 2
-      # PathAlignCritic:
-      #   enabled: true
-      #   cost_power: 1
-      #   cost_weight: 14.0
-      #   max_path_occupancy_ratio: 0.05
-      #   trajectory_point_step: 4
-      #   threshold_to_consider: 0.5
-      #   offset_from_furthest: 20
-      #   use_path_orientations: false
-      # PathFollowCritic:
-      #   enabled: true
-      #   cost_power: 1
-      #   cost_weight: 5.0
-      #   offset_from_furthest: 5
-      #   threshold_to_consider: 1.4
-      # PathAngleCritic:
-      #   enabled: true
-      #   cost_power: 1
-      #   cost_weight: 2.0
-      #   offset_from_furthest: 4
-      #   threshold_to_consider: 0.5
-      #   max_angle_to_furthest: 1.0
-      #   mode: 0
-      # # TwirlingCritic:
-      # #   enabled: true
-      # #   twirling_cost_power: 1
-      # #   twirling_cost_weight: 10.0
 
 local_costmap:
   local_costmap:
     ros__parameters:
       update_frequency: 5.0
       publish_frequency: 2.0
-      global_frame: odom
-      robot_base_frame: base_link
+      global_frame: <robot_namespace>/odom
+      robot_base_frame: <robot_namespace>/base_link
       rolling_window: true
       width: 3
       height: 3
@@ -404,9 +198,6 @@ local_costmap:
           raytrace_min_range: 0.0
           obstacle_max_range: 2.5
           obstacle_min_range: 0.0
-      static_layer:
-        plugin: "nav2_costmap_2d::StaticLayer"
-        map_subscribe_transient_local: True
       always_send_full_costmap: True
 
 global_costmap:
@@ -415,7 +206,7 @@ global_costmap:
       update_frequency: 1.0
       publish_frequency: 1.0
       global_frame: map
-      robot_base_frame: base_link
+      robot_base_frame: <robot_namespace>/base_link
       robot_radius: 0.26
       resolution: 0.05
       track_unknown_space: true
@@ -442,13 +233,6 @@ global_costmap:
         cost_scaling_factor: 3.0
         inflation_radius: 0.7
       always_send_full_costmap: True
-
-# The yaml_filename does not need to be specified since it going to be set by defaults in launch.
-# If you'd rather set it in the yaml, remove the default "map" value in the tb3_simulation_launch.py
-# file & provide full path to map below. If CLI map configuration or launch default is provided, that will be used.
-# map_server:
-#   ros__parameters:
-#     yaml_filename: ""
 
 map_saver:
   ros__parameters:
@@ -495,9 +279,9 @@ behavior_server:
       plugin: "nav2_behaviors::Wait"
     assisted_teleop:
       plugin: "nav2_behaviors::AssistedTeleop"
-    local_frame: odom
+    local_frame: <robot_namespace>/odom
     global_frame: map
-    robot_base_frame: base_link
+    robot_base_frame: <robot_namespace>/base_link
     transform_tolerance: 0.1
     simulate_ahead_time: 2.0
     max_rotational_vel: 1.0
@@ -531,8 +315,8 @@ velocity_smoother:
 
 collision_monitor:
   ros__parameters:
-    base_frame_id: "base_link"
-    odom_frame_id: "odom"
+    base_frame_id: <robot_namespace>/base_link
+    odom_frame_id: <robot_namespace>/odom
     cmd_vel_in_topic: "cmd_vel_smoothed"
     cmd_vel_out_topic: "cmd_vel"
     state_topic: "collision_monitor_state"
@@ -540,8 +324,6 @@ collision_monitor:
     source_timeout: 1.0
     base_shift_correction: True
     stop_pub_timeout: 2.0
-    # Polygons represent zone around the robot for "stop", "slowdown" and "limit" action types,
-    # and robot footprint for "approach" action type.
     polygons: ["FootprintApproach"]
     FootprintApproach:
       type: "polygon"
@@ -569,11 +351,10 @@ docking_server:
     undock_linear_tolerance: 0.1
     undock_angular_tolerance: 0.01
     max_retries: 5
-    base_frame: "base_link"
+    base_frame: <robot_namespace>/base_link
     fixed_frame: "map"
     dock_backwards: false
     dock_prestaging_tolerance: 0.1
-   # navigate_to_staging_pose: false
 
     # Types of docks
     dock_plugins: ['pharmacist_docks', 'psr_docks']
@@ -582,9 +363,8 @@ docking_server:
       docking_threshold: 0.01
       staging_x_offset: -0.6
       use_external_detection_pose: true
-      use_battery_status: false # true
-      use_stall_detection: false # true
-
+      use_battery_status: false
+      use_stall_detection: false
       external_detection_timeout: 30.0
       external_detection_translation_x: -0.37
       external_detection_translation_y: 0.0
@@ -597,9 +377,8 @@ docking_server:
       docking_threshold: 0.01
       staging_x_offset: -0.6
       use_external_detection_pose: true
-      use_battery_status: false # true
-      use_stall_detection: false # true
-
+      use_battery_status: false
+      use_stall_detection: false
       external_detection_timeout: 30.0
       external_detection_translation_x: -0.37
       external_detection_translation_y: 0.0
@@ -608,12 +387,9 @@ docking_server:
       external_detection_rotation_yaw: 0.0
       filter_coef: 0.2
 
-    # Dock instances
-    # The following example illustrates configuring dock instances.
-    docks: ['pharmacist_dock4', 'pharmacist_dock3', 'pharmacist_dock2', 'pharmacist_dock1']  # Input your docks here
+    # Dock instances  
+    docks: ['pharmacist_dock4', 'pharmacist_dock3', 'pharmacist_dock2', 'pharmacist_dock1']
     
-      # pose: [-5.99, -15.2, 1.57] # for psr docking
-      
     pharmacist_dock4:
       type: 'pharmacist_docks'
       frame: map
@@ -649,8 +425,8 @@ docking_server:
 
 loopback_simulator:
   ros__parameters:
-    base_frame_id: "base_link"
-    odom_frame_id: "odom"
+    base_frame_id: <robot_namespace>/base_link
+    odom_frame_id: <robot_namespace>/odom
     map_frame_id: "map"
-    scan_frame_id: "base_scan"  # tb4_loopback_simulator.launch.py remaps to 'rplidar_link'
+    scan_frame_id: <robot_namespace>/base_scan
     update_duration: 0.02

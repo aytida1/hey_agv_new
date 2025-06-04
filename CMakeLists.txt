@@ -20,6 +20,7 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(action_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
+find_package(apriltag_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -36,10 +37,13 @@ add_executable(scan_merger_v2 src/scan_merger_v2.cpp)
 ament_target_dependencies(scan_merger_v2 rclcpp sensor_msgs geometry_msgs tf2_ros tf2)
 
 add_executable(scan_merger src/scan_merger.cpp)
-ament_target_dependencies(scan_merger rclcpp sensor_msgs)
+ament_target_dependencies(scan_merger rclcpp sensor_msgs geometry_msgs tf2_ros tf2)
 
 add_executable(tag_transform src/tag_transform.cpp)
-ament_target_dependencies(tag_transform rclcpp geometry_msgs tf2_ros tf2 tf2_geometry_msgs)
+ament_target_dependencies(tag_transform rclcpp geometry_msgs tf2_ros tf2 tf2_geometry_msgs apriltag_msgs)
+
+add_executable(tf_publisher src/tf_publisher.cpp)
+ament_target_dependencies(tf_publisher rclcpp tf2_ros tf2 geometry_msgs tf2_msgs)
 
 
 
@@ -56,6 +60,9 @@ install (
     src/some.py
     src/tag_publisher.py
     src/agv_spawn_monitor.py
+    src/topic_checker.py
+    src/initial_pose_setter.py
+    src/web_server.py
     DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -64,10 +71,11 @@ install(TARGETS
   scan_merger
   scan_merger_v2
   tag_transform
+  tf_publisher
   DESTINATION lib/${PROJECT_NAME})
 
 install(
-  DIRECTORY src urdf config launch action models
+  DIRECTORY src urdf config launch action models web_interface
   DESTINATION share/${PROJECT_NAME}
 )
 
