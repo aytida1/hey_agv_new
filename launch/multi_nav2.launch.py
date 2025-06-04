@@ -345,7 +345,7 @@ def generate_launch_description():
 
     # Add AGV groups with delays
     ld.add_action(agv1_group)  # Starts after 5 seconds
-    ld.add_action(agv2_group)  # Starts after 8 seconds
+    # ld.add_action(agv2_group)  # Starts after 8 seconds
     
     # Add TF publisher (starts after 10 seconds)
     ld.add_action(tf_publisher_node)

@@ -45,11 +45,22 @@ agv1/amcl:
     kld_z: 0.99
     set_initial_pose: false
     max_weight_ratio: 1000.0
+
+
+agv1/loopback_simulator:
+  ros__parameters:
+    base_frame_id: "agv1/base_link"
+    odom_frame_id: "agv1/odom"
+    map_frame_id: "map"
+    scan_frame_id: "base_scan"  # tb4_loopback_simulator.launch.py remaps to 'rplidar_link'
+    update_duration: 0.02
+
+
 agv1/bt_navigator:
   ros__parameters:
     global_frame: map
     robot_base_frame: agv1/base_link
-    odom_topic: agv1/odom
+    odom_topic: /agv1/odom
     bt_loop_duration: 10
     default_server_timeout: 20
     wait_for_service_timeout: 1000
@@ -64,6 +75,7 @@ agv1/bt_navigator:
     error_code_names:
     - compute_path_error_code
     - follow_path_error_code
+
 agv1/controller_server:
   ros__parameters:
     controller_frequency: 30.0
@@ -120,6 +132,8 @@ agv1/controller_server:
       rotate_to_heading_min_angle: 0.785
       max_robot_pose_search_dist: 10.0
       stateful: true
+
+
 agv1/local_costmap:
   local_costmap:
     ros__parameters:
@@ -150,7 +164,7 @@ agv1/local_costmap:
         mark_threshold: 0
         observation_sources: scan
         scan:
-          topic: agv1/scan
+          topic: /agv1/scan
           max_obstacle_height: 2.0
           clearing: true
           marking: true
@@ -160,6 +174,8 @@ agv1/local_costmap:
           obstacle_max_range: 2.5
           obstacle_min_range: 0.0
       always_send_full_costmap: true
+
+
 agv1/global_costmap:
   global_costmap:
     ros__parameters:
@@ -170,6 +186,10 @@ agv1/global_costmap:
       robot_radius: 0.26
       resolution: 0.05
       track_unknown_space: true
+      # Add rolling window and size parameters to handle robot outside map bounds
+      rolling_window: true
+      width: 50
+      height: 50
       plugins:
       - static_layer
       - obstacle_layer
@@ -179,7 +199,7 @@ agv1/global_costmap:
         enabled: true
         observation_sources: scan
         scan:
-          topic: agv1/scan
+          topic: /agv1/scan
           max_obstacle_height: 2.0
           clearing: true
           marking: true
@@ -190,12 +210,16 @@ agv1/global_costmap:
           obstacle_min_range: 0.0
       static_layer:
         plugin: nav2_costmap_2d::StaticLayer
+        map_topic: /map
         map_subscribe_transient_local: true
+        subscribe_to_updates: true
       inflation_layer:
         plugin: nav2_costmap_2d::InflationLayer
         cost_scaling_factor: 3.0
         inflation_radius: 0.7
       always_send_full_costmap: true
+
+
 agv1/planner_server:
   ros__parameters:
     expected_planner_frequency: 20.0
@@ -207,12 +231,14 @@ agv1/planner_server:
       tolerance: 0.5
       use_astar: false
       allow_unknown: true
+
+
 agv1/behavior_server:
   ros__parameters:
-    local_costmap_topic: agv1/local_costmap/costmap_raw
-    global_costmap_topic: agv1/global_costmap/costmap_raw
-    local_footprint_topic: agv1/local_costmap/published_footprint
-    global_footprint_topic: agv1/global_costmap/published_footprint
+    local_costmap_topic: /agv1/local_costmap/costmap_raw
+    global_costmap_topic: /agv1/global_costmap/costmap_raw
+    local_footprint_topic: /agv1/local_costmap/published_footprint
+    global_footprint_topic: /agv1/global_costmap/published_footprint
     cycle_frequency: 10.0
     behavior_plugins:
     - spin
@@ -238,6 +264,8 @@ agv1/behavior_server:
     max_rotational_vel: 1.0
     min_rotational_vel: 0.4
     rotational_acc_lim: 3.2
+
+
 agv1/velocity_smoother:
   ros__parameters:
     smoothing_frequency: 20.0
@@ -259,13 +287,16 @@ agv1/velocity_smoother:
     - -2.5
     - 0.0
     - -3.2
-    odom_topic: agv1/odom
+    odom_topic: /agv1/odom
     odom_duration: 0.1
     deadband_velocity:
     - 0.0
     - 0.0
     - 0.0
     velocity_timeout: 1.0
+
+
+
 agv2/amcl:
   ros__parameters:
     alpha1: 0.05
@@ -438,6 +469,10 @@ agv2/global_costmap:
       robot_radius: 0.26
       resolution: 0.05
       track_unknown_space: true
+      # Add rolling window and size parameters to handle robot outside map bounds
+      rolling_window: true
+      width: 50
+      height: 50
       plugins:
       - static_layer
       - obstacle_layer
@@ -458,7 +493,9 @@ agv2/global_costmap:
           obstacle_min_range: 0.0
       static_layer:
         plugin: nav2_costmap_2d::StaticLayer
+        map_topic: /map
         map_subscribe_transient_local: true
+        subscribe_to_updates: true
       inflation_layer:
         plugin: nav2_costmap_2d::InflationLayer
         cost_scaling_factor: 3.0
