@@ -157,7 +157,7 @@ def generate_launch_description():
             parameters=[nav_config, {'use_sim_time': use_sim_time}],
             arguments=['--ros-args', '--log-level', log_level],
             remappings=[
-                ('cmd_vel', f'/{namespace}/cmd_vel'),
+                ('cmd_vel', f'/{namespace}/cmd_vel_nav'),
                 ('odom', f'/{namespace}/odom'),
                 ('tf', '/tf'),
                 ('tf_static', '/tf_static')
@@ -194,7 +194,7 @@ def generate_launch_description():
             parameters=[nav_config, {'use_sim_time': use_sim_time}],
             arguments=['--ros-args', '--log-level', log_level],
             remappings=[
-                ('cmd_vel', f'/{namespace}/cmd_vel'),
+                ('cmd_vel', f'/{namespace}/cmd_vel_nav'),
                 ('odom', f'/{namespace}/odom'),
                 ('tf', '/tf'),
                 ('tf_static', '/tf_static')
@@ -299,8 +299,6 @@ def generate_launch_description():
             parameters=[nav_config, {'use_sim_time': use_sim_time}],
             arguments=['--ros-args', '--log-level', log_level],
             remappings=[
-                ('cmd_vel_in', f'/{namespace}/cmd_vel_smoothed'),
-                ('cmd_vel_out', f'/{namespace}/cmd_vel'),
                 ('scan', f'/{namespace}/scan'),
                 ('tf', '/tf'),
                 ('tf_static', '/tf_static')

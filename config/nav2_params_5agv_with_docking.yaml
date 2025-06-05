@@ -219,7 +219,6 @@ agv1/planner_server:
       tolerance: 0.5
       use_astar: false
       allow_unknown: true
-
 agv1/smoother_server:
   ros__parameters:
     smoother_plugins:
@@ -229,7 +228,6 @@ agv1/smoother_server:
       tolerance: 1.0e-10
       max_its: 1000
       do_refinement: true
-
 agv1/behavior_server:
   ros__parameters:
     local_costmap_topic: /agv1/local_costmap/costmap_raw
@@ -261,7 +259,6 @@ agv1/behavior_server:
     max_rotational_vel: 1.0
     min_rotational_vel: 0.4
     rotational_acc_lim: 3.2
-    
 agv1/velocity_smoother:
   ros__parameters:
     smoothing_frequency: 20.0
@@ -290,7 +287,6 @@ agv1/velocity_smoother:
     - 0.0
     - 0.0
     velocity_timeout: 1.0
-
 agv1/docking_server:
   ros__parameters:
     controller_frequency: 50.0
@@ -380,7 +376,6 @@ agv1/docking_server:
       projection_time: 10.0
       simulation_step: 0.05
       dock_collision_threshold: 0.2
-      
 agv1/collision_monitor:
   ros__parameters:
     base_frame_id: agv1/base_link
@@ -397,19 +392,19 @@ agv1/collision_monitor:
     - StopCircle
     SlowDownCircle:
       type: circle
-      radius: 3.0
+      radius: 0.7
+      slowdown_ratio: 0.5
       action_type: slowdown
       footprint_topic: /agv1/local_costmap/published_footprint
       time_before_collision: 1.2
       simulation_time_step: 0.1
-      min_points: 1
-      slowdown_ratio: 0.9
+      min_points: 4
       visualize: true
       polygon_pub_topic: /agv1/slowdown
       enabled: true
     StopCircle:
       type: circle
-      radius: 1.0
+      radius: 0.3
       action_type: stop
       footprint_topic: /agv1/local_costmap/published_footprint
       time_before_collision: 1.2
@@ -426,8 +421,6 @@ agv1/collision_monitor:
       min_height: 0.15
       max_height: 2.0
       enabled: true
-
-      
 agv2/amcl:
   ros__parameters:
     alpha1: 0.05
@@ -822,13 +815,13 @@ agv2/collision_monitor:
     - StopCircle
     SlowDownCircle:
       type: circle
-      radius: 3.0
+      radius: 0.7
+      slowdown_ratio: 0.5
       action_type: slowdown
       footprint_topic: /agv2/local_costmap/published_footprint
       time_before_collision: 1.2
       simulation_time_step: 0.1
       min_points: 4
-      slowdown_ratio: 0.1
       visualize: true
       polygon_pub_topic: /agv2/slowdown
       enabled: true
@@ -1246,6 +1239,7 @@ agv3/collision_monitor:
     SlowDownCircle:
       type: circle
       radius: 0.7
+      slowdown_ratio: 0.5
       action_type: slowdown
       footprint_topic: /agv3/local_costmap/published_footprint
       time_before_collision: 1.2
@@ -1668,6 +1662,7 @@ agv4/collision_monitor:
     SlowDownCircle:
       type: circle
       radius: 0.7
+      slowdown_ratio: 0.5
       action_type: slowdown
       footprint_topic: /agv4/local_costmap/published_footprint
       time_before_collision: 1.2
@@ -2090,6 +2085,7 @@ agv5/collision_monitor:
     SlowDownCircle:
       type: circle
       radius: 0.7
+      slowdown_ratio: 0.5
       action_type: slowdown
       footprint_topic: /agv5/local_costmap/published_footprint
       time_before_collision: 1.2

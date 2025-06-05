@@ -510,6 +510,7 @@ def generate_multi_agv_config(agv_namespaces: List[str], output_file: str) -> No
                 "SlowDownCircle": {
                     "type": "circle",
                     "radius": 0.7,
+                    "slowdown_ratio": 0.5,
                     "action_type": "slowdown",
                     "footprint_topic": f"/{namespace}/local_costmap/published_footprint",
                     "time_before_collision": 1.2,

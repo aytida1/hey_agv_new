@@ -393,6 +393,7 @@ agv1/collision_monitor:
     SlowDownCircle:
       type: circle
       radius: 0.7
+      slowdown_ratio: 0.5
       action_type: slowdown
       footprint_topic: /agv1/local_costmap/published_footprint
       time_before_collision: 1.2
@@ -815,6 +816,7 @@ agv2/collision_monitor:
     SlowDownCircle:
       type: circle
       radius: 0.7
+      slowdown_ratio: 0.5
       action_type: slowdown
       footprint_topic: /agv2/local_costmap/published_footprint
       time_before_collision: 1.2
@@ -1237,6 +1239,7 @@ agv3/collision_monitor:
     SlowDownCircle:
       type: circle
       radius: 0.7
+      slowdown_ratio: 0.5
       action_type: slowdown
       footprint_topic: /agv3/local_costmap/published_footprint
       time_before_collision: 1.2
@@ -1659,6 +1662,7 @@ agv4/collision_monitor:
     SlowDownCircle:
       type: circle
       radius: 0.7
+      slowdown_ratio: 0.5
       action_type: slowdown
       footprint_topic: /agv4/local_costmap/published_footprint
       time_before_collision: 1.2
@@ -2081,6 +2085,7 @@ agv5/collision_monitor:
     SlowDownCircle:
       type: circle
       radius: 0.7
+      slowdown_ratio: 0.5
       action_type: slowdown
       footprint_topic: /agv5/local_costmap/published_footprint
       time_before_collision: 1.2
