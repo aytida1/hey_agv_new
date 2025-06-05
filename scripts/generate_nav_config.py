@@ -305,6 +305,20 @@ def generate_multi_agv_config(agv_namespaces: List[str], output_file: str) -> No
         }
         complete_config[f"{namespace}/planner_server"] = planner_config
         
+        # Smoother Server configuration for this AGV
+        smoother_config = {
+            "ros__parameters": {
+                "smoother_plugins": ["simple_smoother"],
+                "simple_smoother": {
+                    "plugin": "nav2_smoother::SimpleSmoother",
+                    "tolerance": 1.0e-10,
+                    "max_its": 1000,
+                    "do_refinement": True
+                }
+            }
+        }
+        complete_config[f"{namespace}/smoother_server"] = smoother_config
+        
         # Behavior Server configuration for this AGV
         behavior_config = {
             "ros__parameters": {
@@ -477,6 +491,57 @@ def generate_multi_agv_config(agv_namespaces: List[str], output_file: str) -> No
             }
         }
         complete_config[f"{namespace}/docking_server"] = docking_config
+        
+        # Collision Monitor configuration for this AGV
+        collision_monitor_config = {
+            "ros__parameters": {
+                "base_frame_id": f"{namespace}/base_link",
+                "odom_frame_id": f"{namespace}/odom",
+                "cmd_vel_in_topic": f"/{namespace}/cmd_vel_smoothed",
+                "cmd_vel_out_topic": f"/{namespace}/cmd_vel",
+                "state_topic": f"/{namespace}/collision_monitor_state",
+                "transform_tolerance": 0.2,
+                "source_timeout": 1.0,
+                "base_shift_correction": True,
+                "stop_pub_timeout": 2.0,
+                # Polygons represent zone around the robot for "stop", "slowdown" and "limit" action types,
+                # and robot footprint for "approach" action type.
+                "polygons": ["SlowDownCircle", "StopCircle"],
+                "SlowDownCircle": {
+                    "type": "circle",
+                    "radius": 0.7,
+                    "action_type": "slowdown",
+                    "footprint_topic": f"/{namespace}/local_costmap/published_footprint",
+                    "time_before_collision": 1.2,
+                    "simulation_time_step": 0.1,
+                    "min_points": 4,
+                    "visualize": True,
+                    "polygon_pub_topic": f"/{namespace}/slowdown",
+                    "enabled": True
+                },
+                "StopCircle": {
+                    "type": "circle",
+                    "radius": 0.3,
+                    "action_type": "stop",
+                    "footprint_topic": f"/{namespace}/local_costmap/published_footprint",
+                    "time_before_collision": 1.2,
+                    "simulation_time_step": 0.1,
+                    "min_points": 4,
+                     "polygon_pub_topic": f"/{namespace}/stop",
+                    "visualize": True,
+                    "enabled": True
+                },
+                "observation_sources": ["scan"],
+                "scan": {
+                    "type": "scan",
+                    "topic": f"/{namespace}/scan",
+                    "min_height": 0.15,
+                    "max_height": 2.0,
+                    "enabled": True
+                }
+            }
+        }
+        complete_config[f"{namespace}/collision_monitor"] = collision_monitor_config
     
     # Add shared Waypoint Follower configuration (can be shared across AGVs)
     complete_config["waypoint_follower"] = {

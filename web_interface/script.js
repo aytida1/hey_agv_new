@@ -86,14 +86,53 @@ class AGVControlCenter {
         this.smoothMovement = true;
         this.movementSpeed = 0.1; // Interpolation speed factor (0.1 = 10% per frame)
         
-        // Pharmacy dock status
-        this.dockStatus = {
-            current_dock: null,
-            is_docked: false,
-            operation_in_progress: false,
-            last_operation_status: 'Ready',
-            last_operation_result: null
+        // Pharmacy dock status - now per AGV
+        this.agvDockStates = {
+            agv1: {
+                current_dock: null,
+                is_docked: false,
+                operation_in_progress: false,
+                last_operation_status: 'Ready',
+                last_operation_result: null
+            },
+            agv2: {
+                current_dock: null,
+                is_docked: false,
+                operation_in_progress: false,
+                last_operation_status: 'Ready',
+                last_operation_result: null
+            },
+            agv3: {
+                current_dock: null,
+                is_docked: false,
+                operation_in_progress: false,
+                last_operation_status: 'Ready',
+                last_operation_result: null
+            },
+            agv4: {
+                current_dock: null,
+                is_docked: false,
+                operation_in_progress: false,
+                last_operation_status: 'Ready',
+                last_operation_result: null
+            },
+            agv5: {
+                current_dock: null,
+                is_docked: false,
+                operation_in_progress: false,
+                last_operation_status: 'Ready',
+                last_operation_result: null
+            }
         };
+        
+        // Global dock reservations
+        this.dockReservations = {
+            1: null,
+            2: null,
+            3: null,
+            4: null
+        };
+        
         this.dockServerUrl = '/api/dock';  // Use proxy endpoint
         
         this.init();
@@ -899,10 +938,17 @@ class AGVControlCenter {
             this.elements.agvStatus.innerHTML = `<span class="status-active">AGV ${agvId.toUpperCase()} Selected</span>`;
             this.elements.agvStatus.className = 'agv-status';
             this.updateAGVInfo(agvId);
+            
+            // Update dock status display when switching AGVs
+            this.fetchDockStatus();
+            this.updateDockButtonStates();
         } else {
             this.elements.agvStatus.innerHTML = `<span class="status-inactive">No AGV Selected</span>`;
             this.elements.agvStatus.className = 'agv-status';
             this.clearAGVInfo();
+            
+            // Clear dock display when no AGV is selected
+            this.updateDockButtonStates();
         }
     }
     
@@ -2072,15 +2118,27 @@ class AGVControlCenter {
             return;
         }
 
-        if (this.dockStatus.operation_in_progress) {
-            alert('Dock operation already in progress. Please wait...');
+        const agvState = this.agvDockStates[this.selectedAgv];
+        if (!agvState) {
+            alert(`Invalid AGV: ${this.selectedAgv}`);
+            return;
+        }
+
+        if (agvState.operation_in_progress) {
+            alert(`${this.selectedAgv.toUpperCase()} dock operation already in progress. Please wait...`);
+            return;
+        }
+
+        // Check if dock is occupied by another AGV
+        if (this.dockReservations[dockNumber] && this.dockReservations[dockNumber] !== this.selectedAgv) {
+            alert(`Dock ${dockNumber} is currently occupied by ${this.dockReservations[dockNumber].toUpperCase()}. Please select a different dock.`);
             return;
         }
 
         try {
-            this.updateDockOperationStatus('Initiating dock operation...', true);
+            this.updateDockOperationStatus(this.selectedAgv, 'Initiating dock operation...', true);
             
-            const response = await fetch(`${this.dockServerUrl}/dock/${dockNumber}`, {
+            const response = await fetch(`${this.dockServerUrl}/dock/${this.selectedAgv}/${dockNumber}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -2093,14 +2151,14 @@ class AGVControlCenter {
             }
 
             const result = await response.json();
-            console.log(`🔌 Dock operation initiated: ${result.message}`);
+            console.log(`🔌 Dock operation initiated for ${this.selectedAgv}: ${result.message}`);
             
             // Status will be updated by periodic status checker
             
         } catch (error) {
-            console.error('❌ Dock operation failed:', error);
-            alert(`Failed to dock: ${error.message}`);
-            this.updateDockOperationStatus('Ready', false);
+            console.error(`❌ Dock operation failed for ${this.selectedAgv}:`, error);
+            alert(`Failed to dock ${this.selectedAgv.toUpperCase()}: ${error.message}`);
+            this.updateDockOperationStatus(this.selectedAgv, 'Ready', false);
         }
     }
 
@@ -2110,20 +2168,26 @@ class AGVControlCenter {
             return;
         }
 
-        if (!this.dockStatus.is_docked) {
-            alert('Robot is not currently docked');
+        const agvState = this.agvDockStates[this.selectedAgv];
+        if (!agvState) {
+            alert(`Invalid AGV: ${this.selectedAgv}`);
             return;
         }
 
-        if (this.dockStatus.operation_in_progress) {
-            alert('Dock operation already in progress. Please wait...');
+        if (!agvState.is_docked) {
+            alert(`${this.selectedAgv.toUpperCase()} is not currently docked`);
+            return;
+        }
+
+        if (agvState.operation_in_progress) {
+            alert(`${this.selectedAgv.toUpperCase()} dock operation already in progress. Please wait...`);
             return;
         }
 
         try {
-            this.updateDockOperationStatus('Initiating undock operation...', true);
+            this.updateDockOperationStatus(this.selectedAgv, 'Initiating undock operation...', true);
             
-            const response = await fetch(`${this.dockServerUrl}/undock`, {
+            const response = await fetch(`${this.dockServerUrl}/undock/${this.selectedAgv}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -2136,27 +2200,46 @@ class AGVControlCenter {
             }
 
             const result = await response.json();
-            console.log(`🔓 Undock operation initiated: ${result.message}`);
+            console.log(`🔓 Undock operation initiated for ${this.selectedAgv}: ${result.message}`);
             
             // Status will be updated by periodic status checker
             
         } catch (error) {
-            console.error('❌ Undock operation failed:', error);
-            alert(`Failed to undock: ${error.message}`);
-            this.updateDockOperationStatus('Ready', false);
+            console.error(`❌ Undock operation failed for ${this.selectedAgv}:`, error);
+            alert(`Failed to undock ${this.selectedAgv.toUpperCase()}: ${error.message}`);
+            this.updateDockOperationStatus(this.selectedAgv, 'Ready', false);
         }
     }
 
     async fetchDockStatus() {
         try {
+            // Fetch global status including all AGVs and dock reservations
             const response = await fetch(`${this.dockServerUrl}/status`);
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
 
-            const status = await response.json();
-            this.updateDockStatus(status);
+            const globalStatus = await response.json();
+            
+            // Update AGV dock states
+            if (globalStatus.agv_states) {
+                Object.keys(this.agvDockStates).forEach(agvId => {
+                    if (globalStatus.agv_states[agvId]) {
+                        this.agvDockStates[agvId] = { ...globalStatus.agv_states[agvId] };
+                    }
+                });
+            }
+            
+            // Update dock reservations
+            if (globalStatus.dock_reservations) {
+                this.dockReservations = { ...globalStatus.dock_reservations };
+            }
+            
+            // Update UI for currently selected AGV
+            if (this.selectedAgv && this.agvDockStates[this.selectedAgv]) {
+                this.updateDockStatus(this.agvDockStates[this.selectedAgv]);
+            }
             
         } catch (error) {
             // Silently handle connection errors for status updates
@@ -2164,30 +2247,30 @@ class AGVControlCenter {
         }
     }
 
-    updateDockStatus(status) {
-        this.dockStatus = status;
+    updateDockStatus(agvStatus) {
+        if (!agvStatus) return;
         
-        // Update UI elements
+        // Update UI elements to show the selected AGV's dock status
         const currentDockElement = document.getElementById('currentDock');
         const isDockedElement = document.getElementById('isDocked');
         const dockOperationElement = document.getElementById('dockOperation');
         
         if (currentDockElement) {
-            currentDockElement.textContent = status.current_dock ? `Dock ${status.current_dock}` : 'None';
+            currentDockElement.textContent = agvStatus.current_dock ? `Dock ${agvStatus.current_dock}` : 'None';
         }
         
         if (isDockedElement) {
-            isDockedElement.textContent = status.is_docked ? 'Yes' : 'No';
-            isDockedElement.style.color = status.is_docked ? '#27ae60' : '#e74c3c';
+            isDockedElement.textContent = agvStatus.is_docked ? 'Yes' : 'No';
+            isDockedElement.style.color = agvStatus.is_docked ? '#27ae60' : '#e74c3c';
         }
         
         if (dockOperationElement) {
-            dockOperationElement.textContent = status.last_operation_status;
+            dockOperationElement.textContent = agvStatus.last_operation_status;
             
             // Color based on operation result
-            if (status.last_operation_result === 'success') {
+            if (agvStatus.last_operation_result === 'success') {
                 dockOperationElement.style.color = '#27ae60';
-            } else if (status.last_operation_result === 'error') {
+            } else if (agvStatus.last_operation_result === 'error') {
                 dockOperationElement.style.color = '#e74c3c';
             } else {
                 dockOperationElement.style.color = '#3498db';
@@ -2198,16 +2281,22 @@ class AGVControlCenter {
         this.updateDockButtonStates();
     }
 
-    updateDockOperationStatus(status, inProgress) {
+    updateDockOperationStatus(agvId, status, inProgress) {
+        if (!agvId || !this.agvDockStates[agvId]) return;
+        
         const dockOperationElement = document.getElementById('dockOperation');
-        if (dockOperationElement) {
+        
+        // Only update UI if this is the currently selected AGV
+        if (agvId === this.selectedAgv && dockOperationElement) {
             dockOperationElement.textContent = status;
             dockOperationElement.style.color = inProgress ? '#f39c12' : '#3498db';
         }
         
-        this.dockStatus.operation_in_progress = inProgress;
-        this.dockStatus.last_operation_status = status;
+        // Update the AGV's state
+        this.agvDockStates[agvId].operation_in_progress = inProgress;
+        this.agvDockStates[agvId].last_operation_status = status;
         
+        // Update button states
         this.updateDockButtonStates();
     }
 
@@ -2215,21 +2304,52 @@ class AGVControlCenter {
         const dockButtons = document.querySelectorAll('.dock-btn');
         const undockBtn = document.getElementById('undockBtn');
         
-        const isOperationInProgress = this.dockStatus.operation_in_progress;
-        const isCurrentlyDocked = this.dockStatus.is_docked;
+        if (!this.selectedAgv) {
+            // No AGV selected - disable all buttons
+            dockButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.background = 'linear-gradient(135deg, #bdc3c7, #95a5a6)';
+                btn.innerHTML = btn.innerHTML.replace(/.*>/, '').replace(/.*Dock /, '<i class="fas fa-anchor"></i> Pharmacy Dock ');
+            });
+            if (undockBtn) {
+                undockBtn.disabled = true;
+            }
+            return;
+        }
         
-        // Disable dock buttons during operations
+        const selectedAgvState = this.agvDockStates[this.selectedAgv];
+        const isSelectedAgvBusy = selectedAgvState ? selectedAgvState.operation_in_progress : false;
+        const isSelectedAgvDocked = selectedAgvState ? selectedAgvState.is_docked : false;
+        const selectedAgvCurrentDock = selectedAgvState ? selectedAgvState.current_dock : null;
+        
+        // Update dock buttons
         dockButtons.forEach((btn, index) => {
             const dockNumber = index + 1;
-            const isCurrentDock = this.dockStatus.current_dock === dockNumber;
+            const reservedByAgv = this.dockReservations[dockNumber];
+            const isOccupiedByOtherAgv = reservedByAgv && reservedByAgv !== this.selectedAgv;
+            const isCurrentDockOfSelectedAgv = selectedAgvCurrentDock === dockNumber;
             
-            btn.disabled = isOperationInProgress || (isCurrentlyDocked && isCurrentDock);
+            // Disable button if:
+            // 1. Selected AGV is busy with an operation
+            // 2. Dock is occupied by another AGV
+            // 3. Selected AGV is already docked at this dock
+            btn.disabled = isSelectedAgvBusy || isOccupiedByOtherAgv || isCurrentDockOfSelectedAgv;
             
-            // Visual feedback for current dock
-            if (isCurrentlyDocked && isCurrentDock) {
+            // Visual feedback based on dock state
+            if (isCurrentDockOfSelectedAgv && isSelectedAgvDocked) {
+                // Current dock of selected AGV
                 btn.style.background = 'linear-gradient(135deg, #27ae60, #229954)';
                 btn.innerHTML = `<i class="fas fa-check"></i> Currently Docked ${dockNumber}`;
+            } else if (isOccupiedByOtherAgv) {
+                // Occupied by another AGV
+                btn.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
+                btn.innerHTML = `<i class="fas fa-lock"></i> Occupied by ${reservedByAgv.toUpperCase()}`;
+            } else if (isSelectedAgvBusy) {
+                // Selected AGV is busy
+                btn.style.background = 'linear-gradient(135deg, #f39c12, #e67e22)';
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Pharmacy Dock ${dockNumber}`;
             } else {
+                // Available dock
                 btn.style.background = 'linear-gradient(135deg, #e67e22, #d35400)';
                 btn.innerHTML = `<i class="fas fa-anchor"></i> Pharmacy Dock ${dockNumber}`;
             }
@@ -2237,7 +2357,7 @@ class AGVControlCenter {
         
         // Enable/disable undock button
         if (undockBtn) {
-            undockBtn.disabled = isOperationInProgress || !isCurrentlyDocked;
+            undockBtn.disabled = isSelectedAgvBusy || !isSelectedAgvDocked;
         }
     }
 

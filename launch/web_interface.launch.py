@@ -18,11 +18,11 @@ def generate_launch_description():
             name='rosbridge_server'
         ),
         
-        # Launch the Pharmacy Dock Server (HTTP API server)
+        # Launch the Multi-AGV Pharmacy Dock Server (HTTP API server)
         Node(
             package='hey_agv_new',
-            executable='pharmacy_dock_server.py',
-            name='pharmacy_dock_server',
+            executable='multi_agv_pharmacy_dock_server.py',
+            name='multi_agv_pharmacy_dock_server',
             output='screen',
             parameters=[{
                 'use_sim_time': False

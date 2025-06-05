@@ -246,7 +246,24 @@ def generate_launch_description():
             arguments=['--ros-args', '--log-level', log_level],
             remappings=[
                 ('cmd_vel', f'/{namespace}/cmd_vel_nav'),
-                ('cmd_vel_smoothed', f'/{namespace}/cmd_vel')
+              
+            ]
+        )
+
+        # Smoother server for this AGV
+        smoother_server = Node(
+            package='nav2_smoother',
+            executable='smoother_server',
+            name='smoother_server',
+            namespace=namespace,
+            output='screen',
+            respawn=use_respawn,
+            respawn_delay=2.0,
+            parameters=[nav_config, {'use_sim_time': use_sim_time}],
+            arguments=['--ros-args', '--log-level', log_level],
+            remappings=[
+                ('tf', '/tf'),
+                ('tf_static', '/tf_static')
             ]
         )
 
@@ -265,6 +282,26 @@ def generate_launch_description():
                 ('cmd_vel', f'/{namespace}/cmd_vel'),
                 ('odom', f'/{namespace}/odom'),
                 ('detected_dock_pose', f'/{namespace}/detected_dock_pose'),
+                ('tf', '/tf'),
+                ('tf_static', '/tf_static')
+            ]
+        )
+
+        # Collision Monitor for this AGV
+        collision_monitor = Node(
+            package='nav2_collision_monitor',
+            executable='collision_monitor',
+            name='collision_monitor',
+            namespace=namespace,
+            output='screen',
+            respawn=use_respawn,
+            respawn_delay=2.0,
+            parameters=[nav_config, {'use_sim_time': use_sim_time}],
+            arguments=['--ros-args', '--log-level', log_level],
+            remappings=[
+                ('cmd_vel_in', f'/{namespace}/cmd_vel_smoothed'),
+                ('cmd_vel_out', f'/{namespace}/cmd_vel'),
+                ('scan', f'/{namespace}/scan'),
                 ('tf', '/tf'),
                 ('tf_static', '/tf_static')
             ]
@@ -329,12 +366,15 @@ def generate_launch_description():
                 'node_names': [
                      'amcl',
                     'controller_server',
+                    'smoother_server',
                     'planner_server',
                     'behavior_server',
+                    'velocity_smoother',
+                    'collision_monitor',
                     'bt_navigator',
                     'waypoint_follower',
-                    'velocity_smoother',
-                    'docking_server'
+                    'docking_server',
+                   
                 ]
             }]
         )
@@ -347,11 +387,13 @@ def generate_launch_description():
                     SetParameter('use_sim_time', use_sim_time),
                      amcl_node,
                     controller_server,
+                    smoother_server,
                     planner_server,
                     behavior_server,
                     bt_navigator,
                     waypoint_follower,
                     velocity_smoother,
+                    collision_monitor,
                     docking_server,
                     apriltag_node,
                     tag_transform_node,
@@ -365,7 +407,7 @@ def generate_launch_description():
     agv1_group = create_agv_group('agv1', 5.0)
     
     # AGV2 starts 3 seconds after AGV1
-    # agv2_group = create_agv_group('agv2', 8.0)
+    agv2_group = create_agv_group('agv2', 8.0)
     
     # # AGV3 starts 3 seconds after AGV2
     # agv3_group = create_agv_group('agv3', 11.0)
@@ -423,7 +465,7 @@ def generate_launch_description():
 
     # Add AGV groups with delays
     ld.add_action(agv1_group)  # Starts after 5 seconds
-   # ld.add_action(agv2_group)  # Starts after 8 seconds
+    # ld.add_action(agv2_group)  # Starts after 8 seconds
     # ld.add_action(agv3_group)  # Starts after 11 seconds
     # ld.add_action(agv4_group)  # Starts after 14 seconds
     # ld.add_action(agv5_group)  # Starts after 17 seconds

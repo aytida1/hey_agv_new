@@ -11,11 +11,11 @@ def generate_launch_description():
     package_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     
     return LaunchDescription([
-        # Pharmacy Dock Server
+        # Multi-AGV Pharmacy Dock Server
         Node(
             package='hey_agv_new',
-            executable='pharmacy_dock_server.py',
-            name='pharmacy_dock_server',
+            executable='multi_agv_pharmacy_dock_server.py',
+            name='multi_agv_pharmacy_dock_server',
             output='screen',
             parameters=[],
             remappings=[]
