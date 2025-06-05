@@ -11,6 +11,15 @@ const server = http.createServer(app);
 // Serve static files from web_interface directory
 app.use(express.static(path.join(__dirname, '../web_interface')));
 
+// Proxy API requests to Pharmacy Dock Server
+app.use('/api/dock', createProxyMiddleware({
+    target: 'http://localhost:5000',
+    changeOrigin: true,
+    pathRewrite: {
+        '^/api/dock': '',
+    },
+}));
+
 // Proxy WebSocket connections to ROSBridge
 app.use('/rosbridge', createProxyMiddleware({
     target: 'ws://localhost:9091',

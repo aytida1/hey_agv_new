@@ -862,6 +862,123 @@ body {
     transform: translateY(0);
 }
 
+/* Pharmacy Dock Controls */
+.pharmacy-dock-controls {
+    margin-top: 15px;
+}
+
+.dock-status-section {
+    margin-bottom: 20px;
+}
+
+.dock-status {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    border-left: 4px solid #3498db;
+}
+
+.status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.status-row:last-child {
+    margin-bottom: 0;
+}
+
+.status-row span:first-child {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.status-row span:last-child {
+    font-weight: 600;
+    color: #3498db;
+}
+
+.dock-buttons-section h4 {
+    margin-bottom: 15px;
+}
+
+.dock-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.dock-btn {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    color: white;
+    border: none;
+    padding: 12px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 45px;
+}
+
+.dock-btn:hover {
+    background: linear-gradient(135deg, #d35400, #c0392b);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(231, 126, 34, 0.3);
+}
+
+.dock-btn:active {
+    transform: translateY(0);
+}
+
+.dock-btn:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.undock-btn {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.undock-btn:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+}
+
+.undock-btn:active {
+    transform: translateY(0);
+}
+
+.undock-btn:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
 .goal-input-group {
     display: flex;
     flex-direction: column;

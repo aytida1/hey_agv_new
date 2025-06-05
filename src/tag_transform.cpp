@@ -16,7 +16,7 @@ public:
         
         // Create publisher for detected dock pose
         pose_publisher_ = this->create_publisher<geometry_msgs::msg::PoseStamped>(
-            "/detected_dock_pose", 10);
+            "detected_dock_pose", 10);
         
         // Create timer to periodically publish transform
         timer_ = this->create_wall_timer(
@@ -74,11 +74,11 @@ private:
 
            
             
-            RCLCPP_INFO(this->get_logger(), 
-                        "Published pose: x=%.3f, y=%.3f, z=%.3f", 
-                        pose_stamped.pose.position.x,
-                        pose_stamped.pose.position.y, 
-                        pose_stamped.pose.position.z);
+            // RCLCPP_INFO(this->get_logger(), 
+            //             "Published pose: x=%.3f, y=%.3f, z=%.3f", 
+            //             pose_stamped.pose.position.x,
+            //             pose_stamped.pose.position.y, 
+            //             pose_stamped.pose.position.z);
         }
         catch (const tf2::TransformException & ex)
         {

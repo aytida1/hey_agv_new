@@ -102,10 +102,10 @@ agv1/controller_server:
       forward_sampling_distance: 0.5
       angular_disengage_threshold: 0.3925
       rotate_to_heading_angular_vel: 1.8
-      max_angular_accel: 3.2
+      max_angular_accel: 1.5
       simulate_ahead_time: 1.0
       rotate_to_goal_heading: true
-      desired_linear_vel: 1.0
+      desired_linear_vel: 0.7
       lookahead_dist: 0.6
       min_lookahead_dist: 0.3
       max_lookahead_dist: 0.9
@@ -121,7 +121,7 @@ agv1/controller_server:
       curvature_lookahead_dist: 0.25
       use_cost_regulated_linear_velocity_scaling: false
       regulated_linear_scaling_min_radius: 0.9
-      regulated_linear_scaling_min_speed: 0.25
+      regulated_linear_scaling_min_speed: 0.05
       use_rotate_to_heading: true
       allow_reversing: false
       rotate_to_heading_min_angle: 0.785
@@ -256,13 +256,13 @@ agv1/velocity_smoother:
     scale_velocities: false
     feedback: OPEN_LOOP
     max_velocity:
-    - 4.0
+    - 0.7
     - 0.0
-    - 2.0
+    - 0.5
     min_velocity:
-    - -4.0
+    - -0.7
     - 0.0
-    - -2.0
+    - -0.5
     max_accel:
     - 2.5
     - 0.0
@@ -278,6 +278,7 @@ agv1/velocity_smoother:
     - 0.0
     - 0.0
     velocity_timeout: 1.0
+    
 agv1/docking_server:
   ros__parameters:
     controller_frequency: 50.0
@@ -287,20 +288,22 @@ agv1/docking_server:
     undock_linear_tolerance: 0.1
     undock_angular_tolerance: 0.01
     max_retries: 5
-    base_frame: base_link
-    fixed_frame: map
+    base_frame: "agv1/base_link"
+    fixed_frame: "map"
     dock_backwards: false
     dock_prestaging_tolerance: 0.1
-    dock_plugins:
-    - pharmacist_docks
-    - psr_docks
+   # navigate_to_staging_pose: false
+
+    # Types of docks
+    dock_plugins: ['pharmacist_docks', 'psr_docks']
     pharmacist_docks:
-      plugin: opennav_docking::SimpleNonChargingDock
+      plugin: 'opennav_docking::SimpleNonChargingDock'
       docking_threshold: 0.01
       staging_x_offset: -0.6
       use_external_detection_pose: true
-      use_battery_status: false
-      use_stall_detection: false
+      use_battery_status: false # true
+      use_stall_detection: false # true
+
       external_detection_timeout: 30.0
       external_detection_translation_x: -0.37
       external_detection_translation_y: 0.0
@@ -309,12 +312,13 @@ agv1/docking_server:
       external_detection_rotation_yaw: 0.0
       filter_coef: 0.2
     psr_docks:
-      plugin: opennav_docking::SimpleNonChargingDock
+      plugin: 'opennav_docking::SimpleNonChargingDock'
       docking_threshold: 0.01
       staging_x_offset: -0.6
       use_external_detection_pose: true
-      use_battery_status: false
-      use_stall_detection: false
+      use_battery_status: false # true
+      use_stall_detection: false # true
+
       external_detection_timeout: 30.0
       external_detection_translation_x: -0.37
       external_detection_translation_y: 0.0
@@ -322,51 +326,46 @@ agv1/docking_server:
       external_detection_rotation_pitch: 1.5708
       external_detection_rotation_yaw: 0.0
       filter_coef: 0.2
-    docks:
-    - pharmacist_dock4
-    - pharmacist_dock3
-    - pharmacist_dock2
-    - pharmacist_dock1
+
+    # Dock instances
+    # The following example illustrates configuring dock instances.
+    docks: ['pharmacist_dock4', 'pharmacist_dock3', 'pharmacist_dock2', 'pharmacist_dock1']  # Input your docks here
+    
+      # pose: [-5.99, -15.2, 1.57] # for psr docking
+      
     pharmacist_dock4:
-      type: pharmacist_docks
+      type: 'pharmacist_docks'
       frame: map
-      pose:
-      - 8.657
-      - -15.025
-      - 1.578
+      pose: [8.657, -15.025, 1.578]
+      
     pharmacist_dock3:
-      type: pharmacist_docks
+      type: 'pharmacist_docks'
       frame: map
-      pose:
-      - 8.657
-      - -13.142
-      - 1.578
+      pose: [8.657, -13.142, 1.578]
+      
     pharmacist_dock2:
-      type: pharmacist_docks
+      type: 'pharmacist_docks'
       frame: map
-      pose:
-      - 8.657
-      - -11.262
-      - 1.578
+      pose: [8.657, -11.262, 1.578]
+      
     pharmacist_dock1:
-      type: pharmacist_docks
+      type: 'pharmacist_docks'
       frame: map
-      pose:
-      - 8.657
-      - -9.382
-      - 1.578
+      pose: [8.657, -9.382, 1.578] 
+
     controller:
       k_phi: 3.5
       k_delta: 2.5
       v_linear_min: 0.1
       v_linear_max: 0.1
       use_collision_detection: false
-      costmap_topic: local_costmap/costmap_raw
-      footprint_topic: local_costmap/published_footprint
+      costmap_topic: "local_costmap/costmap_raw"
+      footprint_topic: "local_costmap/published_footprint"
       transform_tolerance: 1.0
       projection_time: 10.0
       simulation_step: 0.05
       dock_collision_threshold: 0.2
+
 agv2/amcl:
   ros__parameters:
     alpha1: 0.05
@@ -625,13 +624,13 @@ agv2/velocity_smoother:
     scale_velocities: false
     feedback: OPEN_LOOP
     max_velocity:
-    - 4.0
+    - 0.7
     - 0.0
-    - 2.0
+    - 0.8
     min_velocity:
-    - -4.0
+    - -0.7
     - 0.0
-    - -2.0
+    - -0.8
     max_accel:
     - 2.5
     - 0.0
@@ -656,7 +655,7 @@ agv2/docking_server:
     undock_linear_tolerance: 0.1
     undock_angular_tolerance: 0.01
     max_retries: 5
-    base_frame: base_link
+    base_frame: agv2/base_link
     fixed_frame: map
     dock_backwards: false
     dock_prestaging_tolerance: 0.1
@@ -727,7 +726,7 @@ agv2/docking_server:
     controller:
       k_phi: 3.5
       k_delta: 2.5
-      v_linear_min: 0.1
+      v_linear_max: 0.0
       v_linear_max: 0.1
       use_collision_detection: false
       costmap_topic: local_costmap/costmap_raw
@@ -994,13 +993,13 @@ agv3/velocity_smoother:
     scale_velocities: false
     feedback: OPEN_LOOP
     max_velocity:
-    - 4.0
+    - 1.0
     - 0.0
-    - 2.0
+    - 0.8
     min_velocity:
-    - -4.0
+    - -1.0
     - 0.0
-    - -2.0
+    - -0.8
     max_accel:
     - 2.5
     - 0.0
@@ -1025,7 +1024,7 @@ agv3/docking_server:
     undock_linear_tolerance: 0.1
     undock_angular_tolerance: 0.01
     max_retries: 5
-    base_frame: base_link
+    base_frame: agv3/base_link
     fixed_frame: map
     dock_backwards: false
     dock_prestaging_tolerance: 0.1
@@ -1096,7 +1095,7 @@ agv3/docking_server:
     controller:
       k_phi: 3.5
       k_delta: 2.5
-      v_linear_min: 0.1
+      v_linear_max: 0.0
       v_linear_max: 0.1
       use_collision_detection: false
       costmap_topic: local_costmap/costmap_raw
@@ -1363,13 +1362,13 @@ agv4/velocity_smoother:
     scale_velocities: false
     feedback: OPEN_LOOP
     max_velocity:
-    - 4.0
+    - 1.0
     - 0.0
-    - 2.0
+    - 0.8
     min_velocity:
-    - -4.0
+    - -1.0
     - 0.0
-    - -2.0
+    - -0.8
     max_accel:
     - 2.5
     - 0.0
@@ -1394,7 +1393,7 @@ agv4/docking_server:
     undock_linear_tolerance: 0.1
     undock_angular_tolerance: 0.01
     max_retries: 5
-    base_frame: base_link
+    base_frame: agv4/base_link
     fixed_frame: map
     dock_backwards: false
     dock_prestaging_tolerance: 0.1
@@ -1465,7 +1464,7 @@ agv4/docking_server:
     controller:
       k_phi: 3.5
       k_delta: 2.5
-      v_linear_min: 0.1
+      v_linear_max: 0.0
       v_linear_max: 0.1
       use_collision_detection: false
       costmap_topic: local_costmap/costmap_raw
@@ -1732,13 +1731,13 @@ agv5/velocity_smoother:
     scale_velocities: false
     feedback: OPEN_LOOP
     max_velocity:
-    - 4.0
+    - 1.0
     - 0.0
-    - 2.0
+    - 0.8
     min_velocity:
-    - -4.0
+    - -1.0
     - 0.0
-    - -2.0
+    - -0.8
     max_accel:
     - 2.5
     - 0.0
@@ -1763,7 +1762,7 @@ agv5/docking_server:
     undock_linear_tolerance: 0.1
     undock_angular_tolerance: 0.01
     max_retries: 5
-    base_frame: base_link
+    base_frame: agv5/base_link
     fixed_frame: map
     dock_backwards: false
     dock_prestaging_tolerance: 0.1
@@ -1834,7 +1833,7 @@ agv5/docking_server:
     controller:
       k_phi: 3.5
       k_delta: 2.5
-      v_linear_min: 0.1
+      v_linear_max: 0.0
       v_linear_max: 0.1
       use_collision_detection: false
       costmap_topic: local_costmap/costmap_raw

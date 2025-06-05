@@ -86,6 +86,16 @@ class AGVControlCenter {
         this.smoothMovement = true;
         this.movementSpeed = 0.1; // Interpolation speed factor (0.1 = 10% per frame)
         
+        // Pharmacy dock status
+        this.dockStatus = {
+            current_dock: null,
+            is_docked: false,
+            operation_in_progress: false,
+            last_operation_status: 'Ready',
+            last_operation_result: null
+        };
+        this.dockServerUrl = '/api/dock';  // Use proxy endpoint
+        
         this.init();
     }
     
@@ -845,6 +855,9 @@ class AGVControlCenter {
         
         // Navigation controls
         this.setupNavigationEventListeners();
+        
+        // Pharmacy dock controls
+        this.setupDockEventListeners();
         
         // Debug navigation button
         document.getElementById('checkNavDebug').addEventListener('click', () => {
@@ -2029,6 +2042,219 @@ class AGVControlCenter {
         }
     }
     
+    // =============================================
+    // PHARMACY DOCK CONTROL METHODS
+    // =============================================
+
+    setupDockEventListeners() {
+        // Dock buttons
+        const dockButtons = document.querySelectorAll('.dock-btn');
+        dockButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const dockNumber = parseInt(e.currentTarget.getAttribute('data-dock'));
+                this.dockToPharmacy(dockNumber);
+            });
+        });
+
+        // Undock button
+        const undockBtn = document.getElementById('undockBtn');
+        undockBtn.addEventListener('click', () => {
+            this.undockFromCurrent();
+        });
+
+        // Start periodic status updates
+        this.startDockStatusUpdates();
+    }
+
+    async dockToPharmacy(dockNumber) {
+        if (!this.selectedAgv) {
+            alert('Please select an AGV first');
+            return;
+        }
+
+        if (this.dockStatus.operation_in_progress) {
+            alert('Dock operation already in progress. Please wait...');
+            return;
+        }
+
+        try {
+            this.updateDockOperationStatus('Initiating dock operation...', true);
+            
+            const response = await fetch(`${this.dockServerUrl}/dock/${dockNumber}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log(`🔌 Dock operation initiated: ${result.message}`);
+            
+            // Status will be updated by periodic status checker
+            
+        } catch (error) {
+            console.error('❌ Dock operation failed:', error);
+            alert(`Failed to dock: ${error.message}`);
+            this.updateDockOperationStatus('Ready', false);
+        }
+    }
+
+    async undockFromCurrent() {
+        if (!this.selectedAgv) {
+            alert('Please select an AGV first');
+            return;
+        }
+
+        if (!this.dockStatus.is_docked) {
+            alert('Robot is not currently docked');
+            return;
+        }
+
+        if (this.dockStatus.operation_in_progress) {
+            alert('Dock operation already in progress. Please wait...');
+            return;
+        }
+
+        try {
+            this.updateDockOperationStatus('Initiating undock operation...', true);
+            
+            const response = await fetch(`${this.dockServerUrl}/undock`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log(`🔓 Undock operation initiated: ${result.message}`);
+            
+            // Status will be updated by periodic status checker
+            
+        } catch (error) {
+            console.error('❌ Undock operation failed:', error);
+            alert(`Failed to undock: ${error.message}`);
+            this.updateDockOperationStatus('Ready', false);
+        }
+    }
+
+    async fetchDockStatus() {
+        try {
+            const response = await fetch(`${this.dockServerUrl}/status`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const status = await response.json();
+            this.updateDockStatus(status);
+            
+        } catch (error) {
+            // Silently handle connection errors for status updates
+            console.warn('⚠️ Failed to fetch dock status:', error.message);
+        }
+    }
+
+    updateDockStatus(status) {
+        this.dockStatus = status;
+        
+        // Update UI elements
+        const currentDockElement = document.getElementById('currentDock');
+        const isDockedElement = document.getElementById('isDocked');
+        const dockOperationElement = document.getElementById('dockOperation');
+        
+        if (currentDockElement) {
+            currentDockElement.textContent = status.current_dock ? `Dock ${status.current_dock}` : 'None';
+        }
+        
+        if (isDockedElement) {
+            isDockedElement.textContent = status.is_docked ? 'Yes' : 'No';
+            isDockedElement.style.color = status.is_docked ? '#27ae60' : '#e74c3c';
+        }
+        
+        if (dockOperationElement) {
+            dockOperationElement.textContent = status.last_operation_status;
+            
+            // Color based on operation result
+            if (status.last_operation_result === 'success') {
+                dockOperationElement.style.color = '#27ae60';
+            } else if (status.last_operation_result === 'error') {
+                dockOperationElement.style.color = '#e74c3c';
+            } else {
+                dockOperationElement.style.color = '#3498db';
+            }
+        }
+        
+        // Update button states
+        this.updateDockButtonStates();
+    }
+
+    updateDockOperationStatus(status, inProgress) {
+        const dockOperationElement = document.getElementById('dockOperation');
+        if (dockOperationElement) {
+            dockOperationElement.textContent = status;
+            dockOperationElement.style.color = inProgress ? '#f39c12' : '#3498db';
+        }
+        
+        this.dockStatus.operation_in_progress = inProgress;
+        this.dockStatus.last_operation_status = status;
+        
+        this.updateDockButtonStates();
+    }
+
+    updateDockButtonStates() {
+        const dockButtons = document.querySelectorAll('.dock-btn');
+        const undockBtn = document.getElementById('undockBtn');
+        
+        const isOperationInProgress = this.dockStatus.operation_in_progress;
+        const isCurrentlyDocked = this.dockStatus.is_docked;
+        
+        // Disable dock buttons during operations
+        dockButtons.forEach((btn, index) => {
+            const dockNumber = index + 1;
+            const isCurrentDock = this.dockStatus.current_dock === dockNumber;
+            
+            btn.disabled = isOperationInProgress || (isCurrentlyDocked && isCurrentDock);
+            
+            // Visual feedback for current dock
+            if (isCurrentlyDocked && isCurrentDock) {
+                btn.style.background = 'linear-gradient(135deg, #27ae60, #229954)';
+                btn.innerHTML = `<i class="fas fa-check"></i> Currently Docked ${dockNumber}`;
+            } else {
+                btn.style.background = 'linear-gradient(135deg, #e67e22, #d35400)';
+                btn.innerHTML = `<i class="fas fa-anchor"></i> Pharmacy Dock ${dockNumber}`;
+            }
+        });
+        
+        // Enable/disable undock button
+        if (undockBtn) {
+            undockBtn.disabled = isOperationInProgress || !isCurrentlyDocked;
+        }
+    }
+
+    startDockStatusUpdates() {
+        // Update dock status every 2 seconds
+        setInterval(() => {
+            this.fetchDockStatus();
+        }, 2000);
+        
+        // Initial status fetch
+        this.fetchDockStatus();
+    }
+
+    // =============================================
+    // END PHARMACY DOCK CONTROL METHODS
+    // =============================================
+
     setGoalFromMapClick(e) {
         // Convert click coordinates to world coordinates
         const rect = this.canvas.getBoundingClientRect();
@@ -2075,7 +2301,7 @@ class AGVControlCenter {
         // Create dock request
         const dockRequest = new ROSLIB.ServiceRequest({
             dock_id: dockName,
-            dock_type: 'pharmacist_dock',  // Based on your configuration
+            dock_type: 'pharmacist_docks',  // Based on your configuration
             nav_to_staging_pose: true,
             max_staging_time: 60.0  // 60 seconds timeout
         });

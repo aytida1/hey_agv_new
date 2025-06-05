@@ -6,6 +6,10 @@ from launch.actions import ExecuteProcess
 import os
 
 def generate_launch_description():
+    
+    # Get the path to the package
+    package_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
     return LaunchDescription([
         # Launch ROSBridge on port 9091
         ExecuteProcess(
@@ -14,7 +18,18 @@ def generate_launch_description():
             name='rosbridge_server'
         ),
         
-        # Launch the web interface server
+        # Launch the Pharmacy Dock Server (HTTP API server)
+        Node(
+            package='hey_agv_new',
+            executable='pharmacy_dock_server.py',
+            name='pharmacy_dock_server',
+            output='screen',
+            parameters=[{
+                'use_sim_time': False
+            }]
+        ),
+        
+        # Launch the web interface server with API proxying
         Node(
             package='hey_agv_new',
             executable='web_server.py',
@@ -24,5 +39,5 @@ def generate_launch_description():
                 'use_sim_time': False,
                 'rosbridge_port': 9091
             }]
-        ),
+        )
     ])

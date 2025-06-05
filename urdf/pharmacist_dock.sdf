@@ -21,7 +21,7 @@
       <collision name="collision">
         <geometry>
          <mesh>
-              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/pharmacist_dock.gltf</uri>
+              <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/pharmacist_dock_v2.gltf</uri>
             </mesh>
         </geometry>
         <surface>

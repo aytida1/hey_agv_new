@@ -73,7 +73,7 @@ class DockRobotActionClient(Node):
     def create_dock_pose(self, x, y, z=0.0, qx=0.0, qy=0.0, qz=0.0, qw=1.0):
         """Create a PoseStamped message"""
         pose = PoseStamped()
-        pose.header.frame_id = 'base_link'
+        pose.header.frame_id = 'agv1/base_link'
         pose.header.stamp = self.get_clock().now().to_msg()
         
         pose.pose.position.x = float(x)
@@ -97,8 +97,8 @@ def main(args=None):
     try:
         # Send docking goal
         future = action_client.send_goal(
-            dock_id="pharmacist_dock2",
-            dock_type="simple_charging_dock",
+            dock_id="pharmacist_dock1",
+            dock_type="pharmacist_docks",
             navigate_to_staging_pose=True
         )
         

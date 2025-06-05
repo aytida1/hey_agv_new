@@ -354,14 +354,14 @@ def generate_multi_agv_config(agv_namespaces: List[str], output_file: str) -> No
                 "scale_velocities": False,
                 "feedback": "OPEN_LOOP",
                 "max_velocity": [
-                    4.0,
+                    0.7,
                     0.0,
-                    2.0
+                    0.5
                 ],
                 "min_velocity": [
-                    -4.0,
+                    -0.7,
                     0.0,
-                    -2.0
+                    -0.5
                 ],
                 "max_accel": [
                     2.5,
@@ -395,7 +395,7 @@ def generate_multi_agv_config(agv_namespaces: List[str], output_file: str) -> No
                 "undock_linear_tolerance": 0.1,
                 "undock_angular_tolerance": 0.01,
                 "max_retries": 5,
-                "base_frame": "base_link",
+                "base_frame": f"{namespace}/base_link",
                 "fixed_frame": "map",
                 "dock_backwards": False,
                 "dock_prestaging_tolerance": 0.1,
@@ -464,7 +464,7 @@ def generate_multi_agv_config(agv_namespaces: List[str], output_file: str) -> No
                 "controller": {
                     "k_phi": 3.5,
                     "k_delta": 2.5,
-                    "v_linear_min": 0.1,
+                    "v_linear_min": -0.1,
                     "v_linear_max": 0.1,
                     "use_collision_detection": False,
                     "costmap_topic": "local_costmap/costmap_raw",

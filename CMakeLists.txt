@@ -57,6 +57,7 @@ install (
   PROGRAMS
     src/dock.py
     src/pharmacy_dock_gui.py
+    src/pharmacy_dock_server.py
     src/some.py
     src/tag_publisher.py
     src/agv_spawn_monitor.py

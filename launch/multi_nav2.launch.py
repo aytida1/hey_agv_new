@@ -278,21 +278,25 @@ def generate_launch_description():
             namespace=namespace,
             output='screen',
             parameters=[
-                os.path.join(
-                    get_package_share_directory('apriltag_ros'),
-                    'cfg',
-                    'tags_36h11.yaml'
-                ),
                 {
-                'image_transport': 'raw',
-                'family': '36h11',
-                'size': 0.162,
-                'max_hamming': 0,
-                'z_up': True
-            }],
+                    'use_sim_time': use_sim_time,
+                    'image_transport': 'raw',
+                    'family': '36h11',
+                    'size': 0.07,
+                    'max_hamming': 0,
+                    'z_up': True,
+                    'tag_threads': 2,
+                    'tag_decimate': 1.0,
+                    'tag_blur': 0.0,
+                    'tag_refine_edges': True,
+                    'tag_debug': False,
+                    'publish_tf': True,
+                    'camera_frame_id': f'{namespace}/camera_optical_link'  # Override frame_id
+                }
+            ],
             remappings=[
-                ('image_rect', f'/{namespace}/camera/image'),
-                ('camera_info', f'/{namespace}/camera/camera_info'),
+                ('image_rect', f'/{namespace}/image_rect'),
+                ('camera_info', f'/{namespace}/camera_info'),
                 ('tf', '/tf'),
                 ('tf_static', '/tf_static')
             ]
@@ -323,7 +327,7 @@ def generate_launch_description():
                 'use_sim_time': use_sim_time,
                 'autostart': autostart,
                 'node_names': [
-                    'amcl',
+                     'amcl',
                     'controller_server',
                     'planner_server',
                     'behavior_server',
@@ -341,7 +345,7 @@ def generate_launch_description():
             actions=[
                 GroupAction([
                     SetParameter('use_sim_time', use_sim_time),
-                    amcl_node,
+                     amcl_node,
                     controller_server,
                     planner_server,
                     behavior_server,

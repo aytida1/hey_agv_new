@@ -106,6 +106,50 @@
             </div>
 
             <div class="panel-section">
+                <h3><i class="fas fa-anchor"></i> Pharmacy Dock Control</h3>
+                <div class="pharmacy-dock-controls">
+                    <div class="dock-status-section">
+                        <h4><i class="fas fa-info-circle"></i> Dock Status</h4>
+                        <div class="dock-status" id="dockStatus">
+                            <div class="status-row">
+                                <span>Current Dock:</span>
+                                <span id="currentDock">None</span>
+                            </div>
+                            <div class="status-row">
+                                <span>Docked:</span>
+                                <span id="isDocked">No</span>
+                            </div>
+                            <div class="status-row">
+                                <span>Operation:</span>
+                                <span id="dockOperation">Ready</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dock-buttons-section">
+                        <h4><i class="fas fa-anchor"></i> Pharmacy Docks</h4>
+                        <div class="dock-buttons">
+                            <button class="dock-btn" data-dock="1" id="dockBtn1">
+                                <i class="fas fa-anchor"></i> Pharmacy Dock 1
+                            </button>
+                            <button class="dock-btn" data-dock="2" id="dockBtn2">
+                                <i class="fas fa-anchor"></i> Pharmacy Dock 2
+                            </button>
+                            <button class="dock-btn" data-dock="3" id="dockBtn3">
+                                <i class="fas fa-anchor"></i> Pharmacy Dock 3
+                            </button>
+                            <button class="dock-btn" data-dock="4" id="dockBtn4">
+                                <i class="fas fa-anchor"></i> Pharmacy Dock 4
+                            </button>
+                        </div>
+                        <button class="undock-btn" id="undockBtn">
+                            <i class="fas fa-sign-out-alt"></i> Undock
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
                 <h3><i class="fas fa-route"></i> Navigation Control</h3>
                 <div class="navigation-controls">
                     <!-- Predefined Locations -->

@@ -40,15 +40,15 @@ def generate_launch_description():
             'spawn_delay': 10.0,  # Much longer delay for first AGV
             'nodes_delay': 12.0
         },
-        {
-            'name': 'agv_2',
-            'namespace': 'agv2',
-            'x': '0',
-            'y': '0',
-            'z': '0.1',
-            'spawn_delay': 20.0,  # Much longer delay for second AGV
-            'nodes_delay': 22.0
-        },
+        # {
+        #     'name': 'agv_2',
+        #     'namespace': 'agv2',
+        #     'x': '0',
+        #     'y': '0',
+        #     'z': '0.1',
+        #     'spawn_delay': 20.0,  # Much longer delay for second AGV
+        #     'nodes_delay': 22.0
+        # },
         # Temporarily comment out third AGV for testing
         # {
         #     'name': 'agv_3',
@@ -117,7 +117,7 @@ def generate_launch_description():
             # Camera image (Gazebo → ROS)
             bridge_config_data.append({
                 'ros_topic_name': f"/{namespace}/image_rect",
-                'gz_topic_name': f"/world/default/model/{model_name}/link/{namespace}/camera/sensor/camera/image",
+                'gz_topic_name': f"/world/empty/model/{model_name}/link/{namespace}/base_link/sensor/camera/image",
                 'ros_type_name': "sensor_msgs/msg/Image",
                 'gz_type_name': "gz.msgs.Image",
                 'direction': "GZ_TO_ROS"
@@ -126,7 +126,7 @@ def generate_launch_description():
             # Camera info (Gazebo → ROS)
             bridge_config_data.append({
                 'ros_topic_name': f"/{namespace}/camera_info",
-                'gz_topic_name': f"/world/default/model/{model_name}/link/{namespace}/camera/sensor/camera/camera_info",
+                'gz_topic_name': f"/world/empty/model/{model_name}/link/{namespace}/base_link/sensor/camera/camera_info",
                 'ros_type_name': "sensor_msgs/msg/CameraInfo",
                 'gz_type_name': "gz.msgs.CameraInfo",
                 'direction': "GZ_TO_ROS"
