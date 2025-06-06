@@ -405,7 +405,7 @@ def generate_launch_description():
     agv1_group = create_agv_group('agv1', 5.0)
     
     # AGV2 starts 3 seconds after AGV1
-    agv2_group = create_agv_group('agv2', 8.0)
+    # agv2_group = create_agv_group('agv2', 8.0)
     
     # # AGV3 starts 3 seconds after AGV2
     # agv3_group = create_agv_group('agv3', 11.0)

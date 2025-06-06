@@ -78,6 +78,9 @@ class AGVWebInterface(Node):
                 if self.path.startswith('/api/dock/'):
                     # Proxy API requests to the pharmacy dock server
                     self.proxy_to_dock_server()
+                elif self.path.startswith('/api/psr-dock/'):
+                    # Proxy API requests to the PSR dock server
+                    self.proxy_to_psr_dock_server()
                 else:
                     # Serve static files
                     super().do_GET()
@@ -86,6 +89,9 @@ class AGVWebInterface(Node):
                 if self.path.startswith('/api/dock/'):
                     # Proxy API requests to the pharmacy dock server
                     self.proxy_to_dock_server()
+                elif self.path.startswith('/api/psr-dock/'):
+                    # Proxy API requests to the PSR dock server
+                    self.proxy_to_psr_dock_server()
                 else:
                     super().do_POST()
                     
@@ -140,6 +146,67 @@ class AGVWebInterface(Node):
                     self.wfile.write(error_response.encode())
                 except Exception as e:
                     logger.error(f"Proxy error: {e}")
+                    self.send_response(500)
+                    self.send_header('Content-Type', 'application/json')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    error_response = json.dumps({
+                        "error": "Internal server error",
+                        "message": str(e)
+                    })
+                    self.wfile.write(error_response.encode())
+                    
+            def proxy_to_psr_dock_server(self):
+                """Proxy requests to the PSR dock server on port 5002"""
+                try:
+                    # Convert /api/psr-dock/* to direct PSR dock server path
+                    dock_path = self.path.replace('/api/psr-dock', '')
+                    if dock_path == '':
+                        dock_path = '/'
+                    
+                    dock_url = f"http://localhost:5002{dock_path}"
+                    
+                    # Handle GET requests
+                    if self.command == 'GET':
+                        response = urllib.request.urlopen(dock_url)
+                        data = response.read()
+                        
+                        self.send_response(200)
+                        self.send_header('Content-Type', 'application/json')
+                        self.send_header('Access-Control-Allow-Origin', '*')
+                        self.end_headers()
+                        self.wfile.write(data)
+                        
+                    # Handle POST requests
+                    elif self.command == 'POST':
+                        content_length = int(self.headers.get('Content-Length', 0))
+                        post_data = self.rfile.read(content_length)
+                        
+                        req = urllib.request.Request(dock_url, data=post_data, method='POST')
+                        req.add_header('Content-Type', 'application/json')
+                        
+                        response = urllib.request.urlopen(req)
+                        data = response.read()
+                        
+                        self.send_response(200)
+                        self.send_header('Content-Type', 'application/json')
+                        self.send_header('Access-Control-Allow-Origin', '*')
+                        self.end_headers()
+                        self.wfile.write(data)
+                        
+                except URLError as e:
+                    logger.error(f"Failed to proxy to PSR dock server: {e}")
+                    self.send_response(503)
+                    self.send_header('Content-Type', 'application/json')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    error_response = json.dumps({
+                        "error": "PSR dock server unavailable",
+                        "message": "Please ensure the PSR dock server is running on port 5002"
+                    })
+                    self.wfile.write(error_response.encode())
+                except Exception as e:
+                    logger.error(f"PSR dock proxy error: {e}")
                     self.send_response(500)
                     self.send_header('Content-Type', 'application/json')
                     self.send_header('Access-Control-Allow-Origin', '*')

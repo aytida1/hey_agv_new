@@ -306,12 +306,12 @@ agv1/docking_server:
     pharmacist_docks:
       plugin: opennav_docking::SimpleNonChargingDock
       docking_threshold: 0.01
-      staging_x_offset: -0.6
+      staging_x_offset: -0.8
       use_external_detection_pose: true
       use_battery_status: false
       use_stall_detection: false
       external_detection_timeout: 30.0
-      external_detection_translation_x: -0.37
+      external_detection_translation_x: -0.4
       external_detection_translation_y: 0.0
       external_detection_rotation_roll: 0.0
       external_detection_rotation_pitch: 1.5708
@@ -320,12 +320,12 @@ agv1/docking_server:
     psr_docks:
       plugin: opennav_docking::SimpleNonChargingDock
       docking_threshold: 0.01
-      staging_x_offset: -0.6
+      staging_x_offset: -0.8
       use_external_detection_pose: true
       use_battery_status: false
       use_stall_detection: false
       external_detection_timeout: 30.0
-      external_detection_translation_x: -0.37
+      external_detection_translation_x: -0.4
       external_detection_translation_y: 0.0
       external_detection_rotation_roll: 0.0
       external_detection_rotation_pitch: 1.5708
@@ -336,6 +336,7 @@ agv1/docking_server:
     - pharmacist_dock3
     - pharmacist_dock2
     - pharmacist_dock1
+    - psr_dock1
     pharmacist_dock4:
       type: pharmacist_docks
       frame: map
@@ -363,6 +364,13 @@ agv1/docking_server:
       pose:
       - 8.657
       - -9.382
+      - 1.578
+    psr_dock1:
+      type: psr_docks
+      frame: map
+      pose:
+      - -2.7
+      - -15.12
       - 1.578
     controller:
       k_phi: 3.5
@@ -392,7 +400,7 @@ agv1/collision_monitor:
     - StopCircle
     SlowDownCircle:
       type: circle
-      radius: 0.7
+      radius: 0.27
       slowdown_ratio: 0.5
       action_type: slowdown
       footprint_topic: /agv1/local_costmap/published_footprint
@@ -404,7 +412,7 @@ agv1/collision_monitor:
       enabled: true
     StopCircle:
       type: circle
-      radius: 0.3
+      radius: 0.25
       action_type: stop
       footprint_topic: /agv1/local_costmap/published_footprint
       time_before_collision: 1.2

@@ -145,6 +145,68 @@
                         <button class="undock-btn" id="undockBtn">
                             <i class="fas fa-sign-out-alt"></i> Undock
                         </button>
+                        <button class="cancel-dock-btn" id="cancelDockBtn" style="display: none;">
+                            <i class="fas fa-times"></i> Cancel Operation
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3><i class="fas fa-anchor"></i> PSR Dock Control</h3>
+                <div class="psr-dock-controls">
+                    <div class="dock-status-section">
+                        <h4><i class="fas fa-info-circle"></i> PSR Dock Status</h4>
+                        <div class="dock-status" id="psrDockStatus">
+                            <div class="status-row">
+                                <span>Current PSR Dock:</span>
+                                <span id="currentPsrDock">None</span>
+                            </div>
+                            <div class="status-row">
+                                <span>Docked:</span>
+                                <span id="isPsrDocked">No</span>
+                            </div>
+                            <div class="status-row">
+                                <span>Operation:</span>
+                                <span id="psrDockOperation">Ready</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dock-buttons-section">
+                        <h4><i class="fas fa-anchor"></i> PSR Docks</h4>
+                        <div class="dock-buttons">
+                            <button class="psr-dock-btn" data-dock="1" id="psrDockBtn1">
+                                <i class="fas fa-anchor"></i> PSR Dock 1
+                            </button>
+                            <button class="psr-dock-btn" data-dock="2" id="psrDockBtn2">
+                                <i class="fas fa-anchor"></i> PSR Dock 2
+                            </button>
+                            <button class="psr-dock-btn" data-dock="3" id="psrDockBtn3">
+                                <i class="fas fa-anchor"></i> PSR Dock 3
+                            </button>
+                            <button class="psr-dock-btn" data-dock="4" id="psrDockBtn4">
+                                <i class="fas fa-anchor"></i> PSR Dock 4
+                            </button>
+                            <button class="psr-dock-btn" data-dock="5" id="psrDockBtn5">
+                                <i class="fas fa-anchor"></i> PSR Dock 5
+                            </button>
+                            <button class="psr-dock-btn" data-dock="6" id="psrDockBtn6">
+                                <i class="fas fa-anchor"></i> PSR Dock 6
+                            </button>
+                            <button class="psr-dock-btn" data-dock="7" id="psrDockBtn7">
+                                <i class="fas fa-anchor"></i> PSR Dock 7
+                            </button>
+                            <button class="psr-dock-btn" data-dock="8" id="psrDockBtn8">
+                                <i class="fas fa-anchor"></i> PSR Dock 8
+                            </button>
+                        </div>
+                        <button class="undock-btn" id="psrUndockBtn">
+                            <i class="fas fa-sign-out-alt"></i> Undock
+                        </button>
+                        <button class="cancel-dock-btn" id="cancelPsrDockBtn" style="display: none;">
+                            <i class="fas fa-times"></i> Cancel Operation
+                        </button>
                     </div>
                 </div>
             </div>
@@ -158,18 +220,6 @@
                         <div class="location-buttons">
                             <button class="location-btn" data-location="home">
                                 <i class="fas fa-home"></i> Home
-                            </button>
-                            <button class="location-btn" data-location="dock1">
-                                <i class="fas fa-charging-station"></i> Dock 1
-                            </button>
-                            <button class="location-btn" data-location="dock2">
-                                <i class="fas fa-charging-station"></i> Dock 2
-                            </button>
-                            <button class="location-btn" data-location="dock3">
-                                <i class="fas fa-charging-station"></i> Dock 3
-                            </button>
-                            <button class="location-btn" data-location="dock4">
-                                <i class="fas fa-charging-station"></i> Dock 4
                             </button>
                             <button class="location-btn" data-location="center">
                                 <i class="fas fa-crosshairs"></i> Center
@@ -218,6 +268,58 @@
                             </button>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Lift and Lock Controls -->
+            <div class="panel-section">
+                <h3><i class="fas fa-arrows-alt-v"></i> Lift & Lock Controls</h3>
+                
+                <!-- Lift Status -->
+                <div class="lift-status-section">
+                    <h4><i class="fas fa-info-circle"></i> Lift Status</h4>
+                    <div class="lift-status">
+                        <div class="status-row">
+                            <span>Lift Position:</span>
+                            <span id="lift-position">--</span>
+                        </div>
+                        <div class="status-row">
+                            <span>Left Lock:</span>
+                            <span id="left-lock-position">--</span>
+                        </div>
+                        <div class="status-row">
+                            <span>Right Lock:</span>
+                            <span id="right-lock-position">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lift Control Buttons -->
+                <div class="lift-buttons-section">
+                    <h4><i class="fas fa-gamepad"></i> Controls</h4>
+                    <div class="lift-buttons">
+                        <button class="lift-btn" id="lift-toggle-btn">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>Lift Up</span>
+                        </button>
+                        <button class="lock-btn" id="lock-toggle-btn">
+                            <i class="fas fa-lock"></i>
+                            <span>Lock</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Controls -->
+            <div class="panel-section">
+                <h3><i class="fas fa-exclamation-triangle"></i> Emergency Controls</h3>
+                <div class="emergency-buttons">
+                    <button id="emergencyStop" class="btn btn-danger">
+                        <i class="fas fa-stop"></i> Emergency Stop
+                    </button>
+                    <button id="resetEmergency" class="btn btn-secondary" style="display: none;">
+                        <i class="fas fa-redo"></i> Reset Emergency
+                    </button>
                 </div>
             </div>
         </div>

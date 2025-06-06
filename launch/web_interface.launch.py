@@ -29,6 +29,17 @@ def generate_launch_description():
             }]
         ),
         
+        # Launch the Multi-AGV PSR Dock Server (HTTP API server)
+        Node(
+            package='hey_agv_new',
+            executable='multi_agv_psr_dock_server.py',
+            name='multi_agv_psr_dock_server',
+            output='screen',
+            parameters=[{
+                'use_sim_time': False
+            }]
+        ),
+        
         # Launch the web interface server with API proxying
         Node(
             package='hey_agv_new',

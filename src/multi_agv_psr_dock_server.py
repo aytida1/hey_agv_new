@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Multi-AGV Pharmacy Dock Server
-Handles docking operations for multiple AGVs with dock reservation system
+Multi-AGV PSR Dock Server
+Handles PSR docking operations for multiple AGVs with dock reservation system
 Enhanced with collision and stalling detection for immediate goal cancellation
 """
 import rclpy
@@ -23,11 +23,11 @@ from nav_msgs.msg import Odometry
 from std_msgs.msg import Bool
 
 
-class MultiAGVPharmacyDockServer(Node):
+class MultiAGVPsrDockServer(Node):
     def __init__(self):
-        super().__init__('multi_agv_pharmacy_dock_server')
+        super().__init__('multi_agv_psr_dock_server')
         
-        self.get_logger().info('Multi-AGV Pharmacy Dock Server with Collision & Stalling Detection initialized')
+        self.get_logger().info('Multi-AGV PSR Dock Server with Collision & Stalling Detection initialized')
         
         # Track AGV states - each AGV has its own state
         self.agv_states = {
@@ -108,12 +108,16 @@ class MultiAGVPharmacyDockServer(Node):
             }
         }
         
-        # Global dock reservation system - tracks which AGV is using which dock
+        # Global PSR dock reservation system - scalable for multiple PSR docks
         self.dock_reservations = {
             1: None,  # None means dock is free, otherwise contains AGV ID
             2: None,
             3: None,
-            4: None
+            4: None,
+            5: None,
+            6: None,
+            7: None,
+            8: None
         }
         
         # Action clients for each AGV (created dynamically when needed)
@@ -151,7 +155,7 @@ class MultiAGVPharmacyDockServer(Node):
         
         @self.app.route('/status', methods=['GET'])
         def get_global_status():
-            """Get global docking status for all AGVs"""
+            """Get global PSR docking status for all AGVs"""
             return jsonify({
                 'agv_states': self.agv_states,
                 'dock_reservations': self.dock_reservations,
@@ -160,7 +164,7 @@ class MultiAGVPharmacyDockServer(Node):
         
         @self.app.route('/status/<agv_id>', methods=['GET'])
         def get_agv_status(agv_id):
-            """Get docking status for specific AGV"""
+            """Get PSR docking status for specific AGV"""
             if agv_id not in self.agv_states:
                 return jsonify({'error': f'Unknown AGV: {agv_id}'}), 400
             
@@ -169,37 +173,37 @@ class MultiAGVPharmacyDockServer(Node):
             return jsonify(agv_state)
         
         @self.app.route('/dock/<agv_id>/<int:dock_number>', methods=['POST'])
-        def dock_agv_to_pharmacy(agv_id, dock_number):
-            """Dock specified AGV to specified pharmacy dock"""
+        def dock_agv_to_psr(agv_id, dock_number):
+            """Dock specified AGV to specified PSR dock"""
             if agv_id not in self.agv_states:
                 return jsonify({'error': f'Unknown AGV: {agv_id}'}), 400
             
-            if dock_number not in [1, 2, 3, 4]:
-                return jsonify({'error': 'Invalid dock number. Must be 1-4'}), 400
+            if dock_number not in self.dock_reservations:
+                return jsonify({'error': f'Invalid PSR dock number. Available docks: {list(self.dock_reservations.keys())}'}), 400
             
             # Check if AGV is busy
             if self.agv_states[agv_id]['operation_in_progress']:
                 return jsonify({'error': f'{agv_id} operation already in progress'}), 409
             
-            # Check if dock is already occupied by another AGV
+            # Check if PSR dock is already occupied by another AGV
             if self.dock_reservations[dock_number] is not None and self.dock_reservations[dock_number] != agv_id:
                 occupying_agv = self.dock_reservations[dock_number]
                 return jsonify({
-                    'error': f'Dock {dock_number} is already occupied by {occupying_agv}'
+                    'error': f'PSR dock {dock_number} is already occupied by {occupying_agv}'
                 }), 409
             
-            # Check if AGV is already docked at this dock
+            # Check if AGV is already docked at this PSR dock
             if (self.agv_states[agv_id]['is_docked'] and 
                 self.agv_states[agv_id]['current_dock'] == dock_number):
                 return jsonify({
-                    'message': f'{agv_id} is already docked at dock {dock_number}'
+                    'message': f'{agv_id} is already docked at PSR dock {dock_number}'
                 })
             
             # Start docking operation in background
             self.thread_pool.submit(self.perform_dock_operation, agv_id, dock_number)
             
             return jsonify({
-                'message': f'Docking operation for {agv_id} to dock {dock_number} initiated',
+                'message': f'PSR docking operation for {agv_id} to dock {dock_number} initiated',
                 'agv_id': agv_id,
                 'dock_number': dock_number
             })
@@ -219,26 +223,26 @@ class MultiAGVPharmacyDockServer(Node):
             # Start undocking operation in background
             self.thread_pool.submit(self.perform_undock_operation, agv_id)
             
-            return jsonify({'message': f'Undocking operation for {agv_id} initiated'})
+            return jsonify({'message': f'PSR undocking operation for {agv_id} initiated'})
         
         @self.app.route('/dock_reservations', methods=['GET'])
         def get_dock_reservations():
-            """Get current dock reservations"""
+            """Get current PSR dock reservations"""
             return jsonify(self.dock_reservations)
         
         @self.app.route('/cancel/<agv_id>', methods=['POST'])
-        def cancel_agv_operation(agv_id):
-            """Cancel ongoing operation for specified AGV"""
+        def cancel_operation(agv_id):
+            """Cancel current operation for specified AGV"""
             if agv_id not in self.agv_states:
                 return jsonify({'error': f'Unknown AGV: {agv_id}'}), 400
             
             if not self.agv_states[agv_id]['operation_in_progress']:
-                return jsonify({'error': f'{agv_id} has no operation in progress'}), 400
+                return jsonify({'error': f'No operation in progress for {agv_id}'}), 400
             
             try:
-                # Cancel the current goal if it exists
+                # Cancel the current goal if one exists
                 if self.agv_states[agv_id]['current_goal_handle'] is not None:
-                    self.get_logger().info(f"Cancelling operation for {agv_id}...")
+                    self.get_logger().info(f"Cancelling PSR operation for {agv_id}...")
                     self.agv_states[agv_id]['current_goal_handle'].cancel_goal_async()
                 
                 # Reset AGV state
@@ -253,19 +257,19 @@ class MultiAGVPharmacyDockServer(Node):
                         self.dock_reservations[dock_num] = None
                         break
                 
-                self.get_logger().info(f"Operation cancelled for {agv_id}")
-                return jsonify({'message': f'Operation cancelled for {agv_id}'})
+                self.get_logger().info(f"PSR operation cancelled for {agv_id}")
+                return jsonify({'message': f'PSR operation cancelled for {agv_id}'})
                 
             except Exception as e:
-                self.get_logger().error(f"Error cancelling operation for {agv_id}: {e}")
+                self.get_logger().error(f"Error cancelling PSR operation for {agv_id}: {e}")
                 return jsonify({'error': f'Failed to cancel operation: {str(e)}'}), 500
 
     def run_flask_server(self):
         """Run Flask server"""
-        self.app.run(host='0.0.0.0', port=5000, debug=False)
+        self.app.run(host='0.0.0.0', port=5002, debug=False)
 
     def perform_dock_operation(self, agv_id: str, dock_number: int):
-        """Perform the complete docking operation for specified AGV"""
+        """Perform the complete PSR docking operation for specified AGV"""
         self.agv_states[agv_id]['operation_in_progress'] = True
         self.agv_states[agv_id]['last_operation_status'] = "In Progress"
         
@@ -274,7 +278,7 @@ class MultiAGVPharmacyDockServer(Node):
             if (self.agv_states[agv_id]['is_docked'] and 
                 self.agv_states[agv_id]['current_dock'] != dock_number):
                 
-                self.get_logger().info(f"{agv_id} currently docked at dock {self.agv_states[agv_id]['current_dock']}, undocking first...")
+                self.get_logger().info(f"{agv_id} currently docked at PSR dock {self.agv_states[agv_id]['current_dock']}, undocking first...")
                 self.agv_states[agv_id]['last_operation_status'] = "Undocking from current dock"
                 
                 if not self.perform_undock_operation_sync(agv_id):
@@ -285,38 +289,38 @@ class MultiAGVPharmacyDockServer(Node):
                 # Wait a bit after undocking
                 time.sleep(2.0)
             
-            # Reserve the dock
+            # Reserve the PSR dock
             self.dock_reservations[dock_number] = agv_id
             
-            # Now dock to the requested dock
-            dock_id = f"pharmacist_dock{dock_number}"
-            dock_type = "pharmacist_docks"
+            # Now dock to the PSR dock
+            dock_id = f"psr_dock{dock_number}"
+            dock_type = "psr_docks"
             
             self.agv_states[agv_id]['last_operation_status'] = f"Docking to {dock_id}"
-            self.get_logger().info(f"Initiating docking for {agv_id} to {dock_id}")
+            self.get_logger().info(f"Initiating PSR docking for {agv_id} to {dock_id}")
             
             success = self.send_dock_goal(agv_id, dock_id, dock_type)
             
             if success:
                 self.agv_states[agv_id]['current_dock'] = dock_number
                 self.agv_states[agv_id]['is_docked'] = True
-                self.agv_states[agv_id]['last_operation_status'] = f"Successfully docked to dock {dock_number}"
+                self.agv_states[agv_id]['last_operation_status'] = f"Successfully docked to PSR dock {dock_number}"
                 self.agv_states[agv_id]['last_operation_result'] = "success"
-                self.get_logger().info(f"{agv_id} successfully docked to dock {dock_number}")
+                self.get_logger().info(f"{agv_id} successfully docked to PSR dock {dock_number}")
             else:
                 # Release the dock reservation on failure
                 self.dock_reservations[dock_number] = None
-                self.agv_states[agv_id]['last_operation_status'] = f"Failed to dock to dock {dock_number}"
+                self.agv_states[agv_id]['last_operation_status'] = f"Failed to dock to PSR dock {dock_number}"
                 self.agv_states[agv_id]['last_operation_result'] = "error"
-                self.get_logger().error(f"{agv_id} failed to dock to dock {dock_number}")
+                self.get_logger().error(f"{agv_id} failed to dock to PSR dock {dock_number}")
                 
         except Exception as e:
             # Release the dock reservation on error
             if self.dock_reservations.get(dock_number) == agv_id:
                 self.dock_reservations[dock_number] = None
-            self.agv_states[agv_id]['last_operation_status'] = f"Error during docking: {str(e)}"
+            self.agv_states[agv_id]['last_operation_status'] = f"Error during PSR docking: {str(e)}"
             self.agv_states[agv_id]['last_operation_result'] = "error"
-            self.get_logger().error(f"Error during docking operation for {agv_id}: {e}")
+            self.get_logger().error(f"Error during PSR docking operation for {agv_id}: {e}")
         
         finally:
             self.agv_states[agv_id]['operation_in_progress'] = False
@@ -332,16 +336,16 @@ class MultiAGVPharmacyDockServer(Node):
             if success:
                 self.agv_states[agv_id]['last_operation_status'] = "Successfully undocked"
                 self.agv_states[agv_id]['last_operation_result'] = "success"
-                self.get_logger().info(f"{agv_id} successfully undocked")
+                self.get_logger().info(f"{agv_id} successfully undocked from PSR dock")
             else:
                 self.agv_states[agv_id]['last_operation_status'] = "Failed to undock"
                 self.agv_states[agv_id]['last_operation_result'] = "error"
-                self.get_logger().error(f"{agv_id} failed to undock")
+                self.get_logger().error(f"{agv_id} failed to undock from PSR dock")
                 
         except Exception as e:
             self.agv_states[agv_id]['last_operation_status'] = f"Error during undocking: {str(e)}"
             self.agv_states[agv_id]['last_operation_result'] = "error"
-            self.get_logger().error(f"Error during undocking operation for {agv_id}: {e}")
+            self.get_logger().error(f"Error during PSR undocking operation for {agv_id}: {e}")
         
         finally:
             self.agv_states[agv_id]['operation_in_progress'] = False
@@ -387,7 +391,7 @@ class MultiAGVPharmacyDockServer(Node):
                 self.get_logger().error(f'Dock action server for {agv_id} not available!')
                 return False
 
-            self.get_logger().info(f'Sending docking goal for {agv_id}: {dock_id} ({dock_type})')
+            self.get_logger().info(f'Sending PSR docking goal for {agv_id}: {dock_id} ({dock_type})')
             
             send_goal_future = dock_client.send_goal_async(goal_msg)
             
@@ -400,29 +404,29 @@ class MultiAGVPharmacyDockServer(Node):
             
             goal_handle = send_goal_future.result()
             if not goal_handle.accepted:
-                self.get_logger().error(f'Docking goal rejected for {agv_id}')
+                self.get_logger().error(f'PSR docking goal rejected for {agv_id}')
                 return False
 
             # Store goal handle for potential cancellation
             self.agv_states[agv_id]['current_goal_handle'] = goal_handle
 
-            self.get_logger().info(f'Docking goal accepted for {agv_id}, waiting for result...')
+            self.get_logger().info(f'PSR docking goal accepted for {agv_id}, waiting for result...')
             
             # Wait for result - no timeout, let it run until completion
             result_future = goal_handle.get_result_async()
             rclpy.spin_until_future_complete(self, result_future)
             
             if not result_future.done():
-                self.get_logger().error(f'Docking operation failed to complete for {agv_id}')
+                self.get_logger().error(f'PSR docking operation failed to complete for {agv_id}')
                 return False
             
             result = result_future.result()
             if result.status == 4:  # SUCCEEDED
-                self.get_logger().info(f'Docking operation succeeded for {agv_id}')
+                self.get_logger().info(f'PSR docking operation succeeded for {agv_id}')
                 self.agv_states[agv_id]['current_goal_handle'] = None
                 return True
             else:
-                self.get_logger().error(f'Docking operation failed for {agv_id} with status: {result.status}')
+                self.get_logger().error(f'PSR docking operation failed for {agv_id} with status: {result.status}')
                 self.agv_states[agv_id]['current_goal_handle'] = None
                 return False
                 
@@ -441,7 +445,7 @@ class MultiAGVPharmacyDockServer(Node):
                 self.get_logger().error(f'Undock action server for {agv_id} not available!')
                 return False
 
-            self.get_logger().info(f'Sending undocking goal for {agv_id}')
+            self.get_logger().info(f'Sending PSR undocking goal for {agv_id}')
             
             send_goal_future = undock_client.send_goal_async(goal_msg)
             
@@ -454,29 +458,29 @@ class MultiAGVPharmacyDockServer(Node):
             
             goal_handle = send_goal_future.result()
             if not goal_handle.accepted:
-                self.get_logger().error(f'Undocking goal rejected for {agv_id}')
+                self.get_logger().error(f'PSR undocking goal rejected for {agv_id}')
                 return False
 
             # Store goal handle for potential cancellation
             self.agv_states[agv_id]['current_goal_handle'] = goal_handle
 
-            self.get_logger().info(f'Undocking goal accepted for {agv_id}, waiting for result...')
+            self.get_logger().info(f'PSR undocking goal accepted for {agv_id}, waiting for result...')
             
             # Wait for result - no timeout, let it run until completion
             result_future = goal_handle.get_result_async()
             rclpy.spin_until_future_complete(self, result_future)
             
             if not result_future.done():
-                self.get_logger().error(f'Undocking operation failed to complete for {agv_id}')
+                self.get_logger().error(f'PSR undocking operation failed to complete for {agv_id}')
                 return False
             
             result = result_future.result()
             if result.status == 4:  # SUCCEEDED
-                self.get_logger().info(f'Undocking operation succeeded for {agv_id}')
+                self.get_logger().info(f'PSR undocking operation succeeded for {agv_id}')
                 self.agv_states[agv_id]['current_goal_handle'] = None
                 return True
             else:
-                self.get_logger().error(f'Undocking operation failed for {agv_id} with status: {result.status}')
+                self.get_logger().error(f'PSR undocking operation failed for {agv_id} with status: {result.status}')
                 self.agv_states[agv_id]['current_goal_handle'] = None
                 return False
                 
@@ -490,21 +494,21 @@ def main(args=None):
     rclpy.init(args=args)
     
     try:
-        dock_server = MultiAGVPharmacyDockServer()
+        dock_server = MultiAGVPsrDockServer()
         
-        dock_server.get_logger().info('🚀 Multi-AGV Pharmacy Dock Server starting...')
-        dock_server.get_logger().info('📊 Web server running on http://localhost:5000')
+        dock_server.get_logger().info('🚀 Multi-AGV PSR Dock Server starting...')
+        dock_server.get_logger().info('📊 Web server running on http://localhost:5002')
         dock_server.get_logger().info('📋 API Endpoints:')
-        dock_server.get_logger().info('   GET  /status - Global status')
-        dock_server.get_logger().info('   GET  /status/<agv_id> - AGV-specific status')
-        dock_server.get_logger().info('   POST /dock/<agv_id>/<dock_number> - Dock AGV')
-        dock_server.get_logger().info('   POST /undock/<agv_id> - Undock AGV')
-        dock_server.get_logger().info('   GET  /dock_reservations - Current reservations')
+        dock_server.get_logger().info('   GET  /status - Global PSR status')
+        dock_server.get_logger().info('   GET  /status/<agv_id> - AGV-specific PSR status')
+        dock_server.get_logger().info('   POST /dock/<agv_id>/<dock_number> - Dock AGV to PSR')
+        dock_server.get_logger().info('   POST /undock/<agv_id> - Undock AGV from PSR')
+        dock_server.get_logger().info('   GET  /dock_reservations - Current PSR reservations')
         
         rclpy.spin(dock_server)
         
     except KeyboardInterrupt:
-        dock_server.get_logger().info('🛑 Multi-AGV Pharmacy Dock Server shutting down...')
+        dock_server.get_logger().info('🛑 Multi-AGV PSR Dock Server shutting down...')
     except Exception as e:
         dock_server.get_logger().error(f'💥 Server error: {e}')
     finally:

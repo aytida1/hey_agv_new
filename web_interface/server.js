@@ -20,6 +20,15 @@ app.use('/api/dock', createProxyMiddleware({
     },
 }));
 
+// Proxy API requests to PSR Dock Server
+app.use('/api/psr-dock', createProxyMiddleware({
+    target: 'http://localhost:5002',
+    changeOrigin: true,
+    pathRewrite: {
+        '^/api/psr-dock': '',
+    },
+}));
+
 // Proxy WebSocket connections to ROSBridge
 app.use('/rosbridge', createProxyMiddleware({
     target: 'ws://localhost:9091',

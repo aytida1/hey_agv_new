@@ -1011,19 +1011,19 @@
 
     <include>
             <name>pharmacist_dock_1</name>
-            <pose>9.25 -8.76 0.03 0 0 0</pose>
+            <pose>9.25 -8.76 0.05 0 0 0</pose>
             <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/pharmacist_dock.sdf</uri>
     </include>
 
     <include>
             <name>pharmacist_dock_2</name>
-            <pose>9.25 -10.68 0.03 0 0 0</pose>
+            <pose>9.25 -10.68 0.05 0 0 0</pose>
             <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/pharmacist_dock.sdf</uri>
     </include>
 
     <include>
             <name>pharmacist_dock_3</name>
-            <pose>9.25 -12.66 0.03 0 0 0</pose>
+            <pose>9.25 -12.66 0.05 0 0 0</pose>
             <uri>file:///home/meditab/car_ws_new/src/hey_agv_new/urdf/pharmacist_dock.sdf</uri>
     </include>
 

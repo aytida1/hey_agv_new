@@ -18,7 +18,7 @@
             <origin xyz="0 0 0" rpy="0 0 1.5708" />
             <material name="blue" />
         </visual>
-        <xacro:box_inertia m="18.0" l="0.462" w="0.436" h="0.142" xyz="0 0 0" rpy="0 0 0" />
+        <xacro:box_inertia m="18.0" l="0.462" w="0.436" h="0.142" xyz="0 0 0.071" rpy="1.5708 0 0" />
         <collision>
             <geometry>
                 <mesh filename="file://$(find hey_agv_new)/urdf/agv_base.dae"/>
@@ -135,47 +135,19 @@
             </geometry>
              <origin xyz="0 0 0" rpy="0 0 0" />
         </collision>
-        <xacro:box_inertia m="3.0" l="0.306" w="0.184" h="0.1" xyz="0 0 0" rpy="0 0 0" />
+        <xacro:box_inertia m="6.0" l="0.306" w="0.184" h="0.1" xyz="0 0 0" rpy="1.5708 0 0" />
     </link>
 
     <joint name="${robot_prefix}lift_base_joint" type="prismatic">
         <parent link="${robot_prefix}base_link" />
         <child link="${robot_prefix}lift_link" />
-        <origin xyz="0 0 0.177" rpy="0 0 1.5708"/>
-        <limit lower="0" upper="0.06" effort="1000.0" velocity="1.0"/>
+        <origin xyz="0 0 0.134" rpy="0 0 1.5708"/>
+        <limit lower="0" upper="0.06" effort="100000.0" velocity="1.0"/>
         <axis xyz="0 0 1" />
     </joint>
 
 
     <!-- servo motor right-->
-    <link name="${robot_prefix}lift_servo_motor_right_link">
-        <visual>
-            <geometry>
-                <box size="0.04 0.02 0.005" />
-            </geometry>
-            <origin xyz="0 0 0" rpy="0 0 0" />
-            <material name="blue" />
-        </visual>
-        <collision>
-            <geometry>
-                <box size="0.04 0.02 0.005" />
-            </geometry>
-             <origin xyz="0 0 0" rpy="0 0 0" />
-        </collision>
-        <xacro:box_inertia m="0.1" l="0.04" w="0.02" h="0.005" xyz="0 0 0" rpy="0 0 0" />
-    </link>
-
-    <joint name="${robot_prefix}lift_servo_motor_right_joint" type="revolute">
-        <parent link="${robot_prefix}lift_link" />
-        <child link="${robot_prefix}lift_servo_motor_right_link" />
-        <origin xyz="0.07 -0.0525 0.0567" rpy="0 0 0"/>
-        <axis xyz="0 0 1" />
-        <limit lower="0.0" upper="1.57" effort="1.0" velocity="1.0"/>
-    </joint>
-
-
-
-    <!-- servo motor left -->
     <link name="${robot_prefix}lift_servo_motor_left_link">
         <visual>
             <geometry>
@@ -190,15 +162,43 @@
             </geometry>
              <origin xyz="0 0 0" rpy="0 0 0" />
         </collision>
-        <xacro:box_inertia m="0.1" l="0.04" w="0.02" h="0.005" xyz="0 0 0" rpy="0 0 0" />
+        <xacro:box_inertia m="0.1" l="0.04" w="0.02" h="0.005" xyz="0 0 0" rpy="1.5708 0 1.5708" />
     </link>
 
     <joint name="${robot_prefix}lift_servo_motor_left_joint" type="revolute">
         <parent link="${robot_prefix}lift_link" />
         <child link="${robot_prefix}lift_servo_motor_left_link" />
-        <origin xyz="-0.07 0.0525 0.0567" rpy="0 0 0"/>
+        <origin xyz="-0.0525 -0.07 0.0567" rpy="0 0 0"/>
         <axis xyz="0 0 1" />
         <limit lower="0.0" upper="1.57" effort="1.0" velocity="1.0"/>
+    </joint>
+
+
+
+    <!-- servo motor left -->
+    <link name="${robot_prefix}lift_servo_motor_right_link">
+        <visual>
+            <geometry>
+                <box size="0.04 0.02 0.005" />
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <material name="blue" />
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.04 0.02 0.005" />
+            </geometry>
+             <origin xyz="0 0 0" rpy="0 0 0" />
+        </collision>
+        <xacro:box_inertia m="0.1" l="0.04" w="0.02" h="0.005" xyz="0 0 0" rpy="1.5708 0 1.5708" />
+    </link>
+
+    <joint name="${robot_prefix}lift_servo_motor_right_joint" type="revolute">
+        <parent link="${robot_prefix}lift_link" />
+        <child link="${robot_prefix}lift_servo_motor_right_link" />
+        <origin xyz="0.0525 0.07 0.0567" rpy="0 0 0"/>
+        <axis xyz="0 0 1" />
+        <limit lower="0.0" upper="1.57" effort="10.0" velocity="1.0"/>
     </joint>
 
     <!-- Caster wheel macro -->

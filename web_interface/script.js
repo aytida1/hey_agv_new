@@ -51,10 +51,6 @@ class AGVControlCenter {
         // Predefined locations
         this.locations = {
             home: { x: 0.0, y: 0.0, yaw: 0.0 },
-            dock1: { x: 8.657, y: -9.382, yaw: 1.578 },
-            dock2: { x: 8.657, y: -11.262, yaw: 1.578 },
-            dock3: { x: 8.657, y: -13.142, yaw: 1.578 },
-            dock4: { x: 8.657, y: -15.025, yaw: 1.578 },
             center: { x: 0.0, y: -10.0, yaw: 0.0 }
         };
         
@@ -125,16 +121,85 @@ class AGVControlCenter {
             }
         };
         
+        // PSR dock status - per AGV
+        this.agvPsrDockStates = {
+            agv1: {
+                current_dock: null,
+                is_docked: false,
+                operation_in_progress: false,
+                last_operation_status: 'Ready',
+                last_operation_result: null
+            },
+            agv2: {
+                current_dock: null,
+                is_docked: false,
+                operation_in_progress: false,
+                last_operation_status: 'Ready',
+                last_operation_result: null
+            },
+            agv3: {
+                current_dock: null,
+                is_docked: false,
+                operation_in_progress: false,
+                last_operation_status: 'Ready',
+                last_operation_result: null
+            },
+            agv4: {
+                current_dock: null,
+                is_docked: false,
+                operation_in_progress: false,
+                last_operation_status: 'Ready',
+                last_operation_result: null
+            },
+            agv5: {
+                current_dock: null,
+                is_docked: false,
+                operation_in_progress: false,
+                last_operation_status: 'Ready',
+                last_operation_result: null
+            }
+        };
+        
         // Global dock reservations
         this.dockReservations = {
             1: null,
             2: null,
             3: null,
-            4: null
+            4: null,
+        };
+        
+        // PSR dock reservations
+        this.psrDockReservations = {
+            1: null,
+            2: null,
+            3: null,
+            4: null,
+            5: null,
+            6: null,
+            7: null,
+            8: null
         };
         
         this.dockServerUrl = '/api/dock';  // Use proxy endpoint
+        this.psrDockServerUrl = '/api/psr-dock';  // PSR dock server endpoint
         
+        // Track lift and servo joint states for UI updates
+        this.liftStates = {};
+        this.servoStates = {};
+        
+        // Control timers for velocity control
+        this.liftControlTimer = null;
+        this.servoControlTimer = null;
+        
+        const agvIds = Object.keys(this.agvData);
+        agvIds.forEach(agvId => {
+            this.liftStates[agvId] = {
+                liftPosition: 0.0,
+                leftServoPosition: 0.0,
+                rightServoPosition: 0.0
+            };
+        });
+
         this.init();
     }
     
@@ -374,7 +439,21 @@ class AGVControlCenter {
             this.handleAllTransforms(message);
         });
         
-        console.log('✅ Subscribed to /map, /tf, /tf_static, and laser scans - ONLY using TF data like tf2_echo');
+        // Subscribe to joint states for each AGV to track lift and servo positions
+        this.jointStateSubscribers = {};
+        Object.keys(this.agvData).forEach(agvId => {
+            this.jointStateSubscribers[agvId] = new ROSLIB.Topic({
+                ros: this.ros,
+                name: `/${agvId}/joint_states`,
+                messageType: 'sensor_msgs/JointState'
+            });
+            
+            this.jointStateSubscribers[agvId].subscribe((message) => {
+                this.handleJointStateData(agvId, message);
+            });
+        });
+
+        console.log('✅ Subscribed to /map, /tf, /tf_static, laser scans, and joint states - ONLY using TF data like tf2_echo');
     }
     
     setupROSPublishers() {
@@ -419,7 +498,27 @@ class AGVControlCenter {
             });
         });
         
-        console.log('✅ Set up publishers for cmd_vel, initialpose topics, navigation action clients, and docking services');
+        // Setup lift and servo command publishers for each AGV
+        this.liftPublishers = {};
+        this.servoPublishers = {};
+        
+        Object.keys(this.agvData).forEach(agvId => {
+            // Lift command publisher
+            this.liftPublishers[agvId] = new ROSLIB.Topic({
+                ros: this.ros,
+                name: `/${agvId}/lift_cmd`,
+                messageType: 'std_msgs/Float64'
+            });
+            
+            // Servo command publisher (for both left and right servo motors)
+            this.servoPublishers[agvId] = new ROSLIB.Topic({
+                ros: this.ros,
+                name: `/${agvId}/lift_servo_cmd`,
+                messageType: 'std_msgs/Float64'
+            });
+        });
+        
+        console.log('✅ Set up publishers for cmd_vel, initialpose topics, navigation action clients, docking services, lift, and servo commands');
     }
     
     handleMapData(mapMsg) {
@@ -870,7 +969,7 @@ class AGVControlCenter {
         
         this.elements.zoomOut.addEventListener('click', () => {
             this.mapScale *= 0.8;
-            this.mapScale = Math.max(5, this.mapScale);
+            this.mapScale = Math.max(5, Math.min(100, this.mapScale));
         });
         
         // Laser scan toggle
@@ -897,6 +996,25 @@ class AGVControlCenter {
         
         // Pharmacy dock controls
         this.setupDockEventListeners();
+        
+        // PSR dock controls
+        this.setupPsrDockEventListeners();
+        
+        // Lift and lock control buttons
+        const liftToggleBtn = document.getElementById('lift-toggle-btn');
+        const lockToggleBtn = document.getElementById('lock-toggle-btn');
+        
+        if (liftToggleBtn) {
+            liftToggleBtn.addEventListener('click', () => {
+                this.toggleLift();
+            });
+        }
+        
+        if (lockToggleBtn) {
+            lockToggleBtn.addEventListener('click', () => {
+                this.toggleLock();
+            });
+        }
         
         // Debug navigation button
         document.getElementById('checkNavDebug').addEventListener('click', () => {
@@ -942,6 +1060,14 @@ class AGVControlCenter {
             // Update dock status display when switching AGVs
             this.fetchDockStatus();
             this.updateDockButtonStates();
+            
+            // Update PSR dock status display when switching AGVs
+            this.fetchPsrDockStatus();
+            this.updatePsrDockButtonStates();
+            
+            // Update lift controls when switching AGVs
+            this.updateLiftButtonStates();
+            this.updateLiftStatusDisplay();
         } else {
             this.elements.agvStatus.innerHTML = `<span class="status-inactive">No AGV Selected</span>`;
             this.elements.agvStatus.className = 'agv-status';
@@ -949,6 +1075,13 @@ class AGVControlCenter {
             
             // Clear dock display when no AGV is selected
             this.updateDockButtonStates();
+            
+            // Clear PSR dock display when no AGV is selected
+            this.updatePsrDockButtonStates();
+            
+            // Clear lift controls when no AGV is selected
+            this.updateLiftButtonStates();
+            this.updateLiftStatusDisplay();
         }
     }
     
@@ -1794,6 +1927,7 @@ class AGVControlCenter {
                     z: 0.0
                 },
                 orientation: this.yawToQuaternion(yaw)
+
             }
         });
         
@@ -1819,7 +1953,7 @@ class AGVControlCenter {
         };
         
         // Update UI
-        this.navigationStatus = 'active';
+        thisnavigationStatus = 'active';
         this.showNavigationStatus(`Navigating to ${goalName} (via topic)...`, 'active');
         this.updateNavigationProgress(0);
         this.elements.cancelGoal.style.display = 'inline-block';
@@ -1830,6 +1964,7 @@ class AGVControlCenter {
     startGoalCompletionChecker() {
         // Clear any existing checker
         if (this.goalCompletionInterval) {
+
             clearInterval(this.goalCompletionInterval);
         }
         
@@ -1844,6 +1979,7 @@ class AGVControlCenter {
     checkGoalCompletion() {
         if (!this.currentGoal || !this.selectedAgv || !this.agvData[this.selectedAgv].active) {
             return;
+
         }
         
         const agv = this.agvData[this.selectedAgv];
@@ -1934,7 +2070,7 @@ class AGVControlCenter {
             const agv = this.agvData[this.selectedAgv];
             const goalX = this.currentGoal.x;
             const goalY = this.currentGoal.y;
-                       const currentX = agv.position.x;
+            const currentX = agv.position.x;
             const currentY = agv.position.y;
             
             // Calculate distance to goal
@@ -2108,6 +2244,12 @@ class AGVControlCenter {
             this.undockFromCurrent();
         });
 
+        // Cancel dock operation button
+        const cancelDockBtn = document.getElementById('cancelDockBtn');
+        cancelDockBtn.addEventListener('click', () => {
+            this.cancelDockOperation();
+        });
+
         // Start periodic status updates
         this.startDockStatusUpdates();
     }
@@ -2207,6 +2349,50 @@ class AGVControlCenter {
         } catch (error) {
             console.error(`❌ Undock operation failed for ${this.selectedAgv}:`, error);
             alert(`Failed to undock ${this.selectedAgv.toUpperCase()}: ${error.message}`);
+            this.updateDockOperationStatus(this.selectedAgv, 'Ready', false);
+        }
+    }
+
+    async cancelDockOperation() {
+        if (!this.selectedAgv) {
+            alert('Please select an AGV first');
+            return;
+        }
+
+        const agvState = this.agvDockStates[this.selectedAgv];
+        if (!agvState) {
+            alert(`Invalid AGV: ${this.selectedAgv}`);
+            return;
+        }
+
+        if (!agvState.operation_in_progress) {
+            alert(`${this.selectedAgv.toUpperCase()} has no dock operation in progress to cancel`);
+            return;
+        }
+
+        try {
+            this.updateDockOperationStatus(this.selectedAgv, 'Cancelling operation...', true);
+            
+            const response = await fetch(`${this.dockServerUrl}/cancel/${this.selectedAgv}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log(`🛑 Dock operation cancelled for ${this.selectedAgv}: ${result.message}`);
+            
+            // Status will be updated by periodic status checker
+            
+        } catch (error) {
+            console.error(`❌ Cancel dock operation failed for ${this.selectedAgv}:`, error);
+            alert(`Failed to cancel dock operation for ${this.selectedAgv.toUpperCase()}: ${error.message}`);
             this.updateDockOperationStatus(this.selectedAgv, 'Ready', false);
         }
     }
@@ -2359,6 +2545,17 @@ class AGVControlCenter {
         if (undockBtn) {
             undockBtn.disabled = isSelectedAgvBusy || !isSelectedAgvDocked;
         }
+        
+        // Show/hide cancel button based on operation status
+        const cancelDockBtn = document.getElementById('cancelDockBtn');
+        if (cancelDockBtn) {
+            if (isSelectedAgvBusy) {
+                cancelDockBtn.style.display = 'inline-block';
+                cancelDockBtn.disabled = false;
+            } else {
+                cancelDockBtn.style.display = 'none';
+            }
+        }
     }
 
     startDockStatusUpdates() {
@@ -2375,187 +2572,678 @@ class AGVControlCenter {
     // END PHARMACY DOCK CONTROL METHODS
     // =============================================
 
-    setGoalFromMapClick(e) {
-        // Convert click coordinates to world coordinates
-        const rect = this.canvas.getBoundingClientRect();
-        const canvasX = e.clientX - rect.left;
-        const canvasY = e.clientY - rect.top;
-        const worldCoords = this.canvasToWorldCoordinates(canvasX, canvasY);
+    // =============================================
+    // PSR DOCK CONTROL METHODS
+    // =============================================
+
+    setupPsrDockEventListeners() {
+        // PSR dock buttons
+        const psrDockButtons = document.querySelectorAll('.psr-dock-btn');
+        psrDockButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const dockNumber = parseInt(e.currentTarget.getAttribute('data-dock'));
+                this.dockToPsr(dockNumber);
+            });
+        });
+
+        // PSR undock button
+        const psrUndockBtn = document.getElementById('psrUndockBtn');
+        if (psrUndockBtn) {
+            psrUndockBtn.addEventListener('click', () => {
+                this.undockFromPsrCurrent();
+            });
+        }
+
+        // Cancel PSR dock operation button
+        const cancelPsrDockBtn = document.getElementById('cancelPsrDockBtn');
+        if (cancelPsrDockBtn) {
+            cancelPsrDockBtn.addEventListener('click', () => {
+                this.cancelPsrDockOperation();
+            });
+        }
+
+        // Start periodic PSR status updates
+        this.startPsrDockStatusUpdates();
+    }
+
+    async dockToPsr(dockNumber) {
+        if (!this.selectedAgv) {
+            alert('Please select an AGV first');
+            return;
+        }
+
+        const agvState = this.agvPsrDockStates[this.selectedAgv];
+        if (!agvState) {
+            alert(`Invalid AGV: ${this.selectedAgv}`);
+            return;
+        }
+
+        if (agvState.operation_in_progress) {
+            alert(`${this.selectedAgv.toUpperCase()} PSR dock operation already in progress. Please wait...`);
+            return;
+        }
+
+        // Check if PSR dock is occupied by another AGV
+        if (this.psrDockReservations[dockNumber] && this.psrDockReservations[dockNumber] !== this.selectedAgv) {
+            alert(`PSR Dock ${dockNumber} is currently occupied by ${this.psrDockReservations[dockNumber].toUpperCase()}. Please select a different dock.`);
+            return;
+        }
+
+        try {
+            this.updatePsrDockOperationStatus(this.selectedAgv, 'Initiating PSR dock operation...', true);
+            
+            const response = await fetch(`${this.psrDockServerUrl}/dock/${this.selectedAgv}/${dockNumber}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log(`🔌 PSR dock operation initiated for ${this.selectedAgv}: ${result.message}`);
+            
+            // Status will be updated by periodic status checker
+            
+        } catch (error) {
+            console.error(`❌ PSR dock operation failed for ${this.selectedAgv}:`, error);
+            alert(`Failed to dock ${this.selectedAgv.toUpperCase()} to PSR: ${error.message}`);
+            this.updatePsrDockOperationStatus(this.selectedAgv, 'Ready', false);
+        }
+    }
+
+    async undockFromPsrCurrent() {
+        if (!this.selectedAgv) {
+            alert('Please select an AGV first');
+            return;
+        }
+
+        const agvState = this.agvPsrDockStates[this.selectedAgv];
+        if (!agvState) {
+            alert(`Invalid AGV: ${this.selectedAgv}`);
+            return;
+        }
+
+        if (!agvState.is_docked) {
+            alert(`${this.selectedAgv.toUpperCase()} is not currently docked at PSR`);
+            return;
+        }
+
+        if (agvState.operation_in_progress) {
+            alert(`${this.selectedAgv.toUpperCase()} PSR dock operation already in progress. Please wait...`);
+            return;
+        }
+
+        try {
+            this.updatePsrDockOperationStatus(this.selectedAgv, 'Initiating PSR undock operation...', true);
+            
+            const response = await fetch(`${this.psrDockServerUrl}/undock/${this.selectedAgv}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log(`🔓 PSR undock operation initiated for ${this.selectedAgv}: ${result.message}`);
+            
+            // Status will be updated by periodic status checker
+            
+        } catch (error) {
+            console.error(`❌ PSR undock operation failed for ${this.selectedAgv}:`, error);
+            alert(`Failed to undock ${this.selectedAgv.toUpperCase()} from PSR: ${error.message}`);
+            this.updatePsrDockOperationStatus(this.selectedAgv, 'Ready', false);
+        }
+    }
+
+    async cancelPsrDockOperation() {
+        if (!this.selectedAgv) {
+            alert('Please select an AGV first');
+            return;
+        }
+
+        const agvState = this.agvPsrDockStates[this.selectedAgv];
+        if (!agvState) {
+            alert(`Invalid AGV: ${this.selectedAgv}`);
+            return;
+        }
+
+        if (!agvState.operation_in_progress) {
+            alert(`${this.selectedAgv.toUpperCase()} has no PSR dock operation in progress to cancel`);
+            return;
+        }
+
+        try {
+            this.updatePsrDockOperationStatus(this.selectedAgv, 'Cancelling PSR operation...', true);
+            
+            const response = await fetch(`${this.psrDockServerUrl}/cancel/${this.selectedAgv}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log(`🛑 PSR dock operation cancelled for ${this.selectedAgv}: ${result.message}`);
+            
+            // Status will be updated by periodic status checker
+            
+        } catch (error) {
+            console.error(`❌ Cancel PSR dock operation failed for ${this.selectedAgv}:`, error);
+            alert(`Failed to cancel PSR dock operation for ${this.selectedAgv.toUpperCase()}: ${error.message}`);
+            this.updatePsrDockOperationStatus(this.selectedAgv, 'Ready', false);
+        }
+    }
+
+    async fetchPsrDockStatus() {
+        try {
+            // Fetch global PSR status including all AGVs and dock reservations
+            const response = await fetch(`${this.psrDockServerUrl}/status`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const globalStatus = await response.json();
+            
+            // Update AGV PSR dock states
+            if (globalStatus.agv_states) {
+                Object.keys(this.agvPsrDockStates).forEach(agvId => {
+                    if (globalStatus.agv_states[agvId]) {
+                        this.agvPsrDockStates[agvId] = { ...globalStatus.agv_states[agvId] };
+                    }
+                });
+            }
+            
+            // Update PSR dock reservations
+            if (globalStatus.dock_reservations) {
+                this.psrDockReservations = { ...globalStatus.dock_reservations };
+            }
+            
+            // Update UI for currently selected AGV
+            if (this.selectedAgv && this.agvPsrDockStates[this.selectedAgv]) {
+                this.updatePsrDockStatus(this.agvPsrDockStates[this.selectedAgv]);
+            }
+            
+        } catch (error) {
+            // Silently handle connection errors for status updates
+            console.warn('⚠️ Failed to fetch PSR dock status:', error.message);
+        }
+    }
+
+    updatePsrDockStatus(agvStatus) {
+        const currentPsrDockElement = document.getElementById('currentPsrDock');
+        const isPsrDockedElement = document.getElementById('isPsrDocked');
+        const psrDockOperationElement = document.getElementById('psrDockOperation');
+
+        if (currentPsrDockElement) {
+            currentPsrDockElement.textContent = agvStatus.current_dock ? `PSR Dock ${agvStatus.current_dock}` : 'None';
+        }
+
+        if (isPsrDockedElement) {
+            isPsrDockedElement.textContent = agvStatus.is_docked ? 'Yes' : 'No';
+            isPsrDockedElement.style.color = agvStatus.is_docked ? '#27ae60' : '#e74c3c';
+        }
+
+        if (psrDockOperationElement) {
+            psrDockOperationElement.textContent = agvStatus.last_operation_status || 'Ready';
+            
+            // Color based on operation result
+            if (agvStatus.last_operation_result === 'success') {
+                psrDockOperationElement.style.color = '#27ae60';
+            } else if (agvStatus.last_operation_result === 'error') {
+                psrDockOperationElement.style.color = '#e74c3c';
+            } else {
+                psrDockOperationElement.style.color = '#3498db';
+            }
+        }
+
+        // Update button states
+        this.updatePsrDockButtonStates();
+    }
+
+    updatePsrDockOperationStatus(agvId, status, inProgress) {
+        if (this.agvPsrDockStates[agvId]) {
+            this.agvPsrDockStates[agvId].last_operation_status = status;
+            this.agvPsrDockStates[agvId].operation_in_progress = inProgress;
+            
+            // Update UI if this is the selected AGV
+            if (agvId === this.selectedAgv) {
+                this.updatePsrDockStatus(this.agvPsrDockStates[agvId]);
+            }
+        }
+    }
+
+    updatePsrDockButtonStates() {
+        const psrDockButtons = document.querySelectorAll('.psr-dock-btn');
+        const psrUndockBtn = document.getElementById('psrUndockBtn');
         
-        // Set goal input fields
-        this.elements.goalX.value = worldCoords.x.toFixed(2);
-        this.elements.goalY.value = worldCoords.y.toFixed(2);
-        this.elements.goalYaw.value = '0'; // Default yaw
+        if (!this.selectedAgv) {
+            // No AGV selected - disable all buttons
+            psrDockButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.background = 'linear-gradient(135deg, #bdc3c7, #95a5a6)';
+                btn.innerHTML = btn.innerHTML.replace(/.*>/, '').replace(/.*PSR Dock /, '<i class="fas fa-anchor"></i> PSR Dock ');
+            });
+            if (psrUndockBtn) {
+                psrUndockBtn.disabled = true;
+            }
+            return;
+        }
+
+        const selectedAgvState = this.agvPsrDockStates[this.selectedAgv];
+        const isSelectedAgvBusy = selectedAgvState ? selectedAgvState.operation_in_progress : false;
+        const isSelectedAgvDocked = selectedAgvState ? selectedAgvState.is_docked : false;
+        const selectedAgvCurrentDock = selectedAgvState ? selectedAgvState.current_dock : null;
         
-        // Visual feedback
-        this.showNavigationStatus(
-            `Goal set from map click: (${worldCoords.x.toFixed(2)}, ${worldCoords.y.toFixed(2)})`,
-            'info'
-        );
+        // Update PSR dock buttons
+        psrDockButtons.forEach((btn, index) => {
+            const dockNumber = index + 1;
+            const reservedByAgv = this.psrDockReservations[dockNumber];
+            const isOccupiedByOtherAgv = reservedByAgv && reservedByAgv !== this.selectedAgv;
+            const isCurrentDockOfSelectedAgv = selectedAgvCurrentDock === dockNumber;
+            
+            // Disable button if:
+            // 1. Selected AGV is busy with an operation
+            // 2. Dock is occupied by another AGV
+            // 3. Selected AGV is already docked at this dock
+            btn.disabled = isSelectedAgvBusy || isOccupiedByOtherAgv || isCurrentDockOfSelectedAgv;
+            
+            // Visual feedback based on dock state
+            if (isCurrentDockOfSelectedAgv && isSelectedAgvDocked) {
+                // Current dock of selected AGV
+                btn.style.background = 'linear-gradient(135deg, #27ae60, #229954)';
+                btn.innerHTML = `<i class="fas fa-check"></i> Currently Docked ${dockNumber}`;
+            } else if (isOccupiedByOtherAgv) {
+                // Occupied by another AGV
+                btn.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
+                btn.innerHTML = `<i class="fas fa-lock"></i> Occupied by ${reservedByAgv.toUpperCase()}`;
+            } else if (isSelectedAgvBusy) {
+                // Selected AGV is busy
+                btn.style.background = 'linear-gradient(135deg, #f39c12, #e67e22)';
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> PSR Dock ${dockNumber}`;
+            } else {
+                // Available dock
+                btn.style.background = 'linear-gradient(135deg, #e67e22, #d35400)';
+                btn.innerHTML = `<i class="fas fa-anchor"></i> PSR Dock ${dockNumber}`;
+            }
+        });
         
-        // Auto-hide message
-        setTimeout(() => {
-            this.hideNavigationStatus();
+        // Enable/disable undock button
+        if (psrUndockBtn) {
+            psrUndockBtn.disabled = isSelectedAgvBusy || !isSelectedAgvDocked;
+        }
+        
+        // Show/hide cancel button based on operation status
+        const cancelPsrDockBtn = document.getElementById('cancelPsrDockBtn');
+        if (cancelPsrDockBtn) {
+            if (isSelectedAgvBusy) {
+                cancelPsrDockBtn.style.display = 'inline-block';
+                cancelPsrDockBtn.disabled = false;
+            } else {
+                cancelPsrDockBtn.style.display = 'none';
+            }
+        }
+    }
+
+    startPsrDockStatusUpdates() {
+        // Update PSR dock status every 2 seconds
+        setInterval(() => {
+            this.fetchPsrDockStatus();
         }, 2000);
         
-        console.log(`🎯 Goal set from map click: (${worldCoords.x.toFixed(2)}, ${worldCoords.y.toFixed(2)})`);
+        // Initial status fetch
+        this.fetchPsrDockStatus();
     }
-    
-    // ==================== END NAVIGATION METHODS ====================
-    
-    // ==================== DOCKING METHODS ====================
-    
-    // Docking functionality
-    performDocking(dockName) {
-        if (!this.selectedAgv || !this.isConnected) {
-            this.showNavigationStatus('Please select an AGV and ensure ROS connection', 'error');
+
+    // =============================================
+    // END PSR DOCK CONTROL METHODS
+    // =============================================
+
+    // Lift and servo control methods
+    handleJointStateData(agvId, jointStateMsg) {
+        if (!this.liftStates[agvId]) {
             return;
         }
         
-        const agvId = this.selectedAgv;
-        console.log(`🔌 Starting docking sequence for ${agvId} to ${dockName}`);
-        
-        // Show docking status
-        this.showNavigationStatus(`🔌 Docking ${agvId.toUpperCase()} to ${dockName}...`, 'info');
-        
-        // Create dock request
-        const dockRequest = new ROSLIB.ServiceRequest({
-            dock_id: dockName,
-            dock_type: 'pharmacist_docks',  // Based on your configuration
-            nav_to_staging_pose: true,
-            max_staging_time: 60.0  // 60 seconds timeout
-        });
-        
-        // Call docking service
-        this.dockingServiceClients[agvId].callService(dockRequest, 
-            (result) => {
-                console.log('✅ Docking service result:', result);
-                if (result.success) {
-                    this.showNavigationStatus(`✅ Successfully docked ${agvId.toUpperCase()} to ${dockName}`, 'success');
-                    
-                    // Auto-hide success message after 3 seconds
-                    setTimeout(() => {
-                        this.hideNavigationStatus();
-                    }, 3000);
-                } else {
-                    const errorMsg = result.error_msg || 'Unknown docking error';
-                    this.showNavigationStatus(`❌ Docking failed: ${errorMsg}`, 'error');
-                    
-                    // Auto-hide error message after 5 seconds
-                    setTimeout(() => {
-                        this.hideNavigationStatus();
-                    }, 5000);
-                }
-            },
-            (error) => {
-                console.error('❌ Docking service error:', error);
-                this.showNavigationStatus(`❌ Docking service error: ${error}`, 'error');
+        // Process joint states based on joint names and positions
+        if (jointStateMsg.name && jointStateMsg.position) {
+            for (let i = 0; i < jointStateMsg.name.length; i++) {
+                const jointName = jointStateMsg.name[i];
+                const position = jointStateMsg.position[i];
                 
-                // Auto-hide error message after 5 seconds
-                setTimeout(() => {
-                    this.hideNavigationStatus();
-                }, 5000);
+                // Update lift position (lift_base_joint is typically index 2)
+                if (jointName.includes('lift_base_joint')) {
+                    this.liftStates[agvId].liftPosition = position;
+                }
+                // Update left servo position (lift_servo_motor_left_joint is typically index 3)
+                else if (jointName.includes('lift_servo_motor_left_joint')) {
+                    this.liftStates[agvId].leftServoPosition = position;
+                }
+                // Update right servo position (lift_servo_motor_right_joint is typically index 4)
+                else if (jointName.includes('lift_servo_motor_right_joint')) {
+                    this.liftStates[agvId].rightServoPosition = position;
+                }
             }
-        );
+        }
+        
+        // Update UI if this is the currently selected AGV
+        if (agvId === this.selectedAgv) {
+            this.updateLiftStatusDisplay();
+            this.updateLiftButtonStates();
+        }
     }
     
-    performUndocking(agvId = null) {
-        const targetAgv = agvId || this.selectedAgv;
-        
-        if (!targetAgv || !this.isConnected) {
-            this.showNavigationStatus('Please select an AGV and ensure ROS connection', 'error');
+    updateLiftStatusDisplay() {
+        if (!this.selectedAgv || !this.liftStates[this.selectedAgv]) {
+            // Clear displays if no AGV selected
+            const liftPosElement = document.getElementById('lift-position');
+            const leftLockElement = document.getElementById('left-lock-position');
+            const rightLockElement = document.getElementById('right-lock-position');
+            
+            if (liftPosElement) liftPosElement.textContent = '--';
+            if (leftLockElement) leftLockElement.textContent = '--';
+            if (rightLockElement) rightLockElement.textContent = '--';
             return;
         }
         
-        console.log(`🔓 Starting undocking sequence for ${targetAgv}`);
+        const liftState = this.liftStates[this.selectedAgv];
         
-        // Show undocking status
-        this.showNavigationStatus(`🔓 Undocking ${targetAgv.toUpperCase()}...`, 'info');
+        // Update lift position display
+        const liftPosElement = document.getElementById('lift-position');
+        if (liftPosElement) {
+            liftPosElement.textContent = `${liftState.liftPosition.toFixed(3)}m`;
+        }
         
-        // Create undock request
-        const undockRequest = new ROSLIB.ServiceRequest({
-            // Empty request for undocking
-        });
+        // Update left lock position display
+        const leftLockElement = document.getElementById('left-lock-position');
+        if (leftLockElement) {
+            const leftPos = liftState.leftServoPosition.toFixed(3);
+            const leftStatus = liftState.leftServoPosition > 1.5 ? ' (Locked)' : ' (Unlocked)';
+            leftLockElement.textContent = `${leftPos}rad${leftStatus}`;
+        }
         
-        // Call undocking service
-        this.undockingServiceClients[targetAgv].callService(undockRequest,
-            (result) => {
-                console.log('✅ Undocking service result:', result);
-                if (result.success) {
-                    this.showNavigationStatus(`✅ Successfully undocked ${targetAgv.toUpperCase()}`, 'success');
-                    
-                    // Auto-hide success message after 3 seconds
-                    setTimeout(() => {
-                        this.hideNavigationStatus();
-                    }, 3000);
-                } else {
-                    const errorMsg = result.error_msg || 'Unknown undocking error';
-                    this.showNavigationStatus(`❌ Undocking failed: ${errorMsg}`, 'error');
-                    
-                    // Auto-hide error message after 5 seconds
-                    setTimeout(() => {
-                        this.hideNavigationStatus();
-                    }, 5000);
-                }
-            },
-            (error) => {
-                console.error('❌ Undocking service error:', error);
-                this.showNavigationStatus(`❌ Undocking service error: ${error}`, 'error');
-                
-                // Auto-hide error message after 5 seconds
-                setTimeout(() => {
-                    this.hideNavigationStatus();
-                }, 5000);
+        // Update right lock position display
+        const rightLockElement = document.getElementById('right-lock-position');
+        if (rightLockElement) {
+            const rightPos = liftState.rightServoPosition.toFixed(3);
+            const rightStatus = liftState.rightServoPosition > 1.5 ? ' (Locked)' : ' (Unlocked)';
+            rightLockElement.textContent = `${rightPos}rad${rightStatus}`;
+        }
+    }
+
+    updateLiftButtonStates() {
+        const liftBtn = document.getElementById('lift-toggle-btn');
+        const lockBtn = document.getElementById('lock-toggle-btn');
+        
+        if (!this.selectedAgv || !this.liftStates[this.selectedAgv]) {
+            // Disable buttons if no AGV selected
+            if (liftBtn) {
+                liftBtn.disabled = true;
+                liftBtn.classList.remove('lift-down');
+                liftBtn.innerHTML = '<i class="fas fa-arrow-up"></i><span>Lift Up</span>';
             }
-        );
+            if (lockBtn) {
+                lockBtn.disabled = true;
+                lockBtn.classList.remove('unlock');
+                lockBtn.innerHTML = '<i class="fas fa-lock"></i><span>Lock</span>';
+            }
+            return;
+        }
+        
+        const liftState = this.liftStates[this.selectedAgv];
+        
+        // Update lift button
+        if (liftBtn) {
+            liftBtn.disabled = false;
+            
+            // Determine if lift is up or down (threshold at 0.03m based on safety logic)
+            const isLiftUp = liftState.liftPosition > 0.03;
+            
+            // Remove previous state classes
+            liftBtn.classList.remove('lift-down');
+            
+            if (isLiftUp) {
+                liftBtn.classList.add('lift-down');
+                liftBtn.innerHTML = '<i class="fas fa-arrow-down"></i><span>Lift Down</span>';
+            } else {
+                liftBtn.innerHTML = '<i class="fas fa-arrow-up"></i><span>Lift Up</span>';
+            }
+        }
+        
+        // Update lock button
+        if (lockBtn) {
+            lockBtn.disabled = false;
+            
+            // Determine if servos are locked (threshold at 1.5 radians based on lock position 1.55)
+            const isLocked = liftState.leftServoPosition > 1.5 || liftState.rightServoPosition > 1.5;
+            
+            // Remove previous state classes
+            lockBtn.classList.remove('unlock');
+            
+            if (isLocked) {
+                lockBtn.classList.add('unlock');
+                lockBtn.innerHTML = '<i class="fas fa-unlock"></i><span>Unlock</span>';
+            } else {
+                lockBtn.innerHTML = '<i class="fas fa-lock"></i><span>Lock</span>';
+            }
+        }
     }
     
-    // ==================== END DOCKING METHODS ====================
+    toggleLift() {
+        if (!this.selectedAgv || !this.liftStates[this.selectedAgv]) {
+            console.error('No AGV selected for lift control');
+            return;
+        }
+        
+        const liftState = this.liftStates[this.selectedAgv];
+        const isLiftUp = liftState.liftPosition > 0.03;
+        
+        // Safety check: prevent commanding lift down if already at lower limit
+        if (isLiftUp && liftState.liftPosition <= 0.01) {
+            console.warn('Cannot lower lift - already at lower limit');
+            return;
+        }
+        
+        // Stop any existing lift control
+        if (this.liftControlTimer) {
+            clearInterval(this.liftControlTimer);
+            this.liftControlTimer = null;
+        }
+        
+        // Determine velocity command and target position
+        let velocityCommand;
+        let targetPosition;
+        
+        if (isLiftUp) {
+            // Lift is up, command it down with negative velocity
+            velocityCommand = -0.02; // Negative velocity to move down
+            targetPosition = 0.001; // Safe position above lower limit
+        } else {
+            // Lift is down, command it up with positive velocity
+            velocityCommand = 0.02; // Positive velocity to move up
+            targetPosition = 0.057; // Target position from lift_up_and_lock.cpp
+        }
+        
+        // Start continuous velocity control
+        this.startLiftVelocityControl(velocityCommand, targetPosition);
+        
+        console.log(`Lift velocity command started for ${this.selectedAgv}: ${velocityCommand} m/s, target: ${targetPosition}m`);
+    }
     
-    // Debug method to check available navigation interfaces
-    checkNavigationInterfaces() {
-        console.log('🔍 Checking available navigation interfaces...');
+    toggleLock() {
+        if (!this.selectedAgv || !this.liftStates[this.selectedAgv]) {
+            console.error('No AGV selected for lock control');
+            return;
+        }
         
-        // Check available topics
-        this.ros.getTopics((topics) => {
-            console.log('📋 Available topics:', topics);
-            const navTopics = topics.filter(topic => 
-                topic.includes('navigate') || 
-                topic.includes('move_base') || 
-                topic.includes('goal') ||
-                topic.includes('cmd_vel')
-            );
-            console.log('🎯 Navigation-related topics:', navTopics);
+        const liftState = this.liftStates[this.selectedAgv];
+        const isLocked = liftState.leftServoPosition > 1.5 || liftState.rightServoPosition > 1.5;
+        
+        // Stop any existing servo control
+        if (this.servoControlTimer) {
+            clearInterval(this.servoControlTimer);
+            this.servoControlTimer = null;
+        }
+        
+        // Determine velocity command and target position
+        let velocityCommand;
+        let targetPosition;
+        
+        if (isLocked) {
+            // Servos are locked, command them to unlock with negative velocity
+            velocityCommand = -0.5; // Negative velocity to move back
+            targetPosition = 0.0; // Return to initial position
+        } else {
+            // Servos are unlocked, command them to lock with positive velocity
+            velocityCommand = 0.5; // Positive velocity to move forward
+            targetPosition = 1.55; // Lock position from lift_up_and_lock.cpp
+        }
+        
+        // Start continuous velocity control
+        this.startServoVelocityControl(velocityCommand, targetPosition);
+        
+        console.log(`Servo velocity command started for ${this.selectedAgv}: ${velocityCommand} rad/s, target: ${targetPosition}rad`);
+    }
+
+    // Continuous velocity control for lift motor
+    startLiftVelocityControl(velocity, targetPosition) {
+        if (!this.selectedAgv || !this.liftStates[this.selectedAgv]) {
+            return;
+        }
+
+        // Publish initial velocity command
+        const liftMessage = new ROSLIB.Message({
+            data: velocity
         });
-        
-        // Check available action servers
-        this.ros.getActionServers((servers) => {
-            console.log('🎭 Available action servers:', servers);
-            const navServers = servers.filter(server => 
-                server.includes('navigate') || 
-                server.includes('move_base')
-            );
-            console.log('🎯 Navigation-related action servers:', navServers);
+        this.liftPublishers[this.selectedAgv].publish(liftMessage);
+
+        // Start monitoring loop
+        this.liftControlTimer = setInterval(() => {
+            if (!this.selectedAgv || !this.liftStates[this.selectedAgv]) {
+                this.stopLiftVelocityControl();
+                return;
+            }
+
+            const currentPosition = this.liftStates[this.selectedAgv].liftPosition;
+            let shouldStop = false;
+
+            if (velocity > 0) {
+                // Moving up - stop when target reached
+                if (currentPosition >= targetPosition) {
+                    shouldStop = true;
+                    console.log(`Lift reached target position: ${currentPosition.toFixed(3)}m`);
+                }
+            } else {
+                // Moving down - stop when target reached or safety limit hit
+                if (currentPosition <= targetPosition || currentPosition <= 0.01) {
+                    shouldStop = true;
+                    console.log(`Lift reached target position: ${currentPosition.toFixed(3)}m`);
+                }
+            }
+
+            if (shouldStop) {
+                this.stopLiftVelocityControl();
+            } else {
+                // Continue sending velocity command
+                this.liftPublishers[this.selectedAgv].publish(liftMessage);
+            }
+        }, 50); // Check every 50ms
+    }
+
+    // Stop lift velocity control
+    stopLiftVelocityControl() {
+        if (this.liftControlTimer) {
+            clearInterval(this.liftControlTimer);
+            this.liftControlTimer = null;
+        }
+
+        if (this.selectedAgv && this.liftPublishers[this.selectedAgv]) {
+            // Send stop command
+            const stopMessage = new ROSLIB.Message({
+                data: 0.0
+            });
+            this.liftPublishers[this.selectedAgv].publish(stopMessage);
+            console.log(`Lift velocity control stopped for ${this.selectedAgv}`);
+        }
+    }
+
+    // Continuous velocity control for servo motors
+    startServoVelocityControl(velocity, targetPosition) {
+        if (!this.selectedAgv || !this.liftStates[this.selectedAgv]) {
+            return;
+        }
+
+        // Publish initial velocity command
+        const servoMessage = new ROSLIB.Message({
+            data: velocity
         });
-        
-        // Check if our specific action server exists
-        const testClient = new ROSLIB.ActionClient({
-            ros: this.ros,
-            serverName: `/${this.selectedAgv}/navigate_to_pose`,
-            actionName: 'nav2_msgs/NavigateToPose'
-        });
-        
-        testClient.on('connect', () => {
-            console.log(`✅ Action server /${this.selectedAgv}/navigate_to_pose is available`);
-        });
-        
-        testClient.on('error', (error) => {
-            console.error(`❌ Action server /${this.selectedAgv}/navigate_to_pose error:`, error);
-        });
-        
-        setTimeout(() => {
-            console.log(`🔍 Test action client connected: ${testClient.isConnected}`);
-        }, 2000);
+        this.servoPublishers[this.selectedAgv].publish(servoMessage);
+
+        // Start monitoring loop
+        this.servoControlTimer = setInterval(() => {
+            if (!this.selectedAgv || !this.liftStates[this.selectedAgv]) {
+                this.stopServoVelocityControl();
+                return;
+            }
+
+            const liftState = this.liftStates[this.selectedAgv];
+            // Use left servo position as reference (both servos move together)
+            const currentPosition = liftState.leftServoPosition;
+            let shouldStop = false;
+
+            if (velocity > 0) {
+                // Moving forward (locking) - stop when target reached
+                if (currentPosition >= targetPosition) {
+                    shouldStop = true;
+                    console.log(`Servo reached lock position: ${currentPosition.toFixed(3)}rad`);
+                }
+            } else {
+                // Moving backward (unlocking) - stop when target reached
+                if (currentPosition <= targetPosition) {
+                    shouldStop = true;
+                    console.log(`Servo reached unlock position: ${currentPosition.toFixed(3)}rad`);
+                }
+            }
+
+            if (shouldStop) {
+                this.stopServoVelocityControl();
+            } else {
+                // Continue sending velocity command
+                this.servoPublishers[this.selectedAgv].publish(servoMessage);
+            }
+        }, 50); // Check every 50ms
+    }
+
+    // Stop servo velocity control
+    stopServoVelocityControl() {
+        if (this.servoControlTimer) {
+            clearInterval(this.servoControlTimer);
+            this.servoControlTimer = null;
+        }
+
+        if (this.selectedAgv && this.servoPublishers[this.selectedAgv]) {
+            // Send stop command
+            const stopMessage = new ROSLIB.Message({
+                data: 0.0
+            });
+            this.servoPublishers[this.selectedAgv].publish(stopMessage);
+            console.log(`Servo velocity control stopped for ${this.selectedAgv}`);
+        }
     }
 }
     

@@ -194,6 +194,7 @@ body {
     background: #ddd;
     outline: none;
     -webkit-appearance: none;
+    appearance: none;
 }
 
 .velocity-controls input[type="range"]::-webkit-slider-thumb {
@@ -748,6 +749,42 @@ body {
     }
 }
 
+/* Status row enhancements */
+.status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(155, 89, 182, 0.1);
+    transition: all 0.2s ease;
+}
+
+.status-row:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.status-row:hover {
+    background: rgba(155, 89, 182, 0.05);
+    border-radius: 6px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.status-row span:first-child {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.status-row span:last-child {
+    font-family: 'Courier New', monospace;
+    background: rgba(155, 89, 182, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 500;
+    color: #8e44ad;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     .container {
@@ -979,6 +1016,99 @@ body {
     box-shadow: none;
 }
 
+/* Cancel Dock Operation Button */
+.cancel-dock-btn {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 8px;
+    animation: pulseCancel 2s infinite;
+}
+
+.cancel-dock-btn:hover {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(243, 156, 18, 0.3);
+}
+
+.cancel-dock-btn:active {
+    transform: translateY(0);
+}
+
+.cancel-dock-btn:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    animation: none;
+}
+
+@keyframes pulseCancel {
+    0% { 
+        box-shadow: 0 4px 8px rgba(243, 156, 18, 0.3);
+    }
+    50% { 
+        box-shadow: 0 6px 12px rgba(243, 156, 18, 0.5);
+    }
+    100% { 
+        box-shadow: 0 4px 8px rgba(243, 156, 18, 0.3);
+    }
+}
+
+/* PSR Dock Controls */
+.psr-dock-controls {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+.psr-dock-btn {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    color: white;
+    border: none;
+    padding: 12px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 45px;
+    margin-bottom: 8px;
+}
+
+.psr-dock-btn:hover {
+    background: linear-gradient(135deg, #8e44ad, #7d3c98);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(155, 89, 182, 0.3);
+}
+
+.psr-dock-btn:active {
+    transform: translateY(0);
+}
+
+.psr-dock-btn:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
 .goal-input-group {
     display: flex;
     flex-direction: column;
@@ -1126,6 +1256,296 @@ body {
     box-shadow: 0 2px 4px rgba(243, 156, 18, 0.3);
 }
 
+/* Lift and Lock Controls */
+.lift-status-section {
+    margin-bottom: 20px;
+}
+
+.lift-status {
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    border-radius: 16px;
+    padding: 20px;
+    border-left: 5px solid #9b59b6;
+    box-shadow: 0 8px 25px rgba(155, 89, 182, 0.12);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.lift-status::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #9b59b6, #3498db, #27ae60);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.lift-status:hover {
+    box-shadow: 0 12px 35px rgba(155, 89, 182, 0.18);
+    transform: translateY(-2px);
+}
+
+.lift-status:hover::before {
+    opacity: 1;
+}
+
+.lift-buttons-section h4 {
+    margin-bottom: 18px;
+}
+
+.lift-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 20px;
+    padding: 8px;
+}
+
+.lift-btn {
+    background: linear-gradient(135deg, #27ae60, #2ecc71, #58d68d);
+    color: white;
+    border: none;
+    border: 3px solid transparent;
+    padding: 16px 12px;
+    border-radius: 16px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 58px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(39, 174, 96, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.lift-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.8s;
+}
+
+.lift-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.lift-btn:hover::before {
+    left: 100%;
+}
+
+.lift-btn:hover::after {
+    width: 200px;
+    height: 200px;
+}
+
+.lift-btn:hover {
+    background: linear-gradient(135deg, #2ecc71, #27ae60, #48c9b0);
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 15px 40px rgba(46, 204, 113, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.lift-btn:active {
+    transform: translateY(-2px) scale(0.97);
+    box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4);
+}
+
+.lift-btn:disabled {
+    background: linear-gradient(135deg, #bdc3c7, #95a5a6);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 4px 12px rgba(149, 165, 166, 0.25);
+    opacity: 0.6;
+}
+
+.lift-btn:disabled::before,
+.lift-btn:disabled::after {
+    display: none;
+}
+
+.lift-btn.lift-down {
+    background: linear-gradient(135deg, #f39c12, #e67e22, #f7dc6f);
+    box-shadow: 0 8px 25px rgba(243, 156, 18, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.lift-btn.lift-down:hover {
+    background: linear-gradient(135deg, #e67e22, #d35400, #f4d03f);
+    box-shadow: 0 15px 40px rgba(243, 156, 18, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.lock-btn {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad, #bb8fce);
+    color: white;
+    border: none;
+    border: 3px solid transparent;
+    padding: 16px 12px;
+    border-radius: 16px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 58px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(155, 89, 182, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.lock-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.8s;
+}
+
+.lock-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.lock-btn:hover::before {
+    left: 100%;
+}
+
+.lock-btn:hover::after {
+    width: 200px;
+    height: 200px;
+}
+
+.lock-btn:hover {
+    background: linear-gradient(135deg, #8e44ad, #7d3c98, #a569bd);
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 15px 40px rgba(155, 89, 182, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.lock-btn:active {
+    transform: translateY(-2px) scale(0.97);
+    box-shadow: 0 8px 20px rgba(155, 89, 182, 0.4);
+}
+
+.lock-btn:disabled {
+    background: linear-gradient(135deg, #bdc3c7, #95a5a6);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 4px 12px rgba(149, 165, 166, 0.25);
+    opacity: 0.6;
+}
+
+.lock-btn:disabled::before,
+.lock-btn:disabled::after {
+    display: none;
+}
+
+.lock-btn.unlock {
+    background: linear-gradient(135deg, #e74c3c, #c0392b, #f1948a);
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    animation: pulseUnlock 3s infinite;
+}
+
+.lock-btn.unlock:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226, #ec7063);
+    box-shadow: 0 15px 40px rgba(231, 76, 60, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Emergency Controls */
+.emergency-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.emergency-btn {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.emergency-btn:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+}
+
+.emergency-btn:active {
+    transform: translateY(0);
+}
+
+.emergency-btn:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.emergency-status {
+    background: #f8d7da;
+    border-radius: 8px;
+    padding: 15px;
+    border-left: 4px solid #e74c3c;
+}
+
+.emergency-message {
+    color: #721c24;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.emergency-details {
+    color: #333;
+    font-size: 0.9rem;
+}
+
 /* Responsive adjustments for navigation */
 @media (max-width: 768px) {
     .location-buttons {
@@ -1135,5 +1555,149 @@ body {
     .location-btn {
         font-size: 0.9rem;
         padding: 12px;
+    }
+}
+
+/* Enhanced button animations and effects */
+.lift-btn i, .lock-btn i {
+    transition: all 0.4s ease;
+    font-size: 1.2em;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.lift-btn:hover i, .lock-btn:hover i {
+    transform: scale(1.15) rotate(8deg);
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3));
+}
+
+.lift-btn:active i, .lock-btn:active i {
+    transform: scale(0.9);
+}
+
+/* Enhanced pulse animations for active states */
+@keyframes pulse {
+    0% { 
+        box-shadow: 0 8px 25px rgba(39, 174, 96, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 12px 35px rgba(39, 174, 96, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        transform: scale(1.02);
+    }
+    100% { 
+        box-shadow: 0 8px 25px rgba(39, 174, 96, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        transform: scale(1);
+    }
+}
+
+@keyframes pulseLock {
+    0% { 
+        box-shadow: 0 8px 25px rgba(155, 89, 182, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 12px 35px rgba(155, 89, 182, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        transform: scale(1.02);
+    }
+    100% { 
+        box-shadow: 0 8px 25px rgba(155, 89, 182, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        transform: scale(1);
+    }
+}
+
+@keyframes pulseUnlock {
+    0% { 
+        box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 12px 35px rgba(231, 76, 60, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        transform: scale(1.02);
+    }
+    100% { 
+        box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        transform: scale(1);
+    }
+}
+
+@keyframes pulseLiftDown {
+    0% { 
+        box-shadow: 0 8px 25px rgba(243, 156, 18, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 12px 35px rgba(243, 156, 18, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        transform: scale(1.02);
+    }
+    100% { 
+        box-shadow: 0 8px 25px rgba(243, 156, 18, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        transform: scale(1);
+    }
+}
+
+/* Glow effects for active states */
+@keyframes glow {
+    0% { 
+        filter: brightness(1) saturate(1);
+    }
+    50% { 
+        filter: brightness(1.1) saturate(1.2);
+    }
+    100% { 
+        filter: brightness(1) saturate(1);
+    }
+}
+
+.lift-btn:not(:disabled):focus {
+    animation: pulse 2.5s infinite, glow 2s infinite;
+    outline: none;
+}
+
+.lift-btn.lift-down:not(:disabled):focus {
+    animation: pulseLiftDown 2.5s infinite, glow 2s infinite;
+}
+
+.lock-btn:not(:disabled):focus {
+    animation: pulseLock 2.5s infinite, glow 2s infinite;
+}
+
+.lock-btn.unlock:not(:disabled):focus {
+    animation: pulseUnlock 2.5s infinite, glow 2s infinite;
+}
+
+/* Loading state animation */
+@keyframes loading {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.lift-btn.loading i, .lock-btn.loading i {
+    animation: loading 1s linear infinite;
+}
+
+/* Ripple effect on click */
+.lift-btn:active, .lock-btn:active {
+    position: relative;
+    overflow: hidden;
+}
+
+.lift-btn:active::after, .lock-btn:active::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+    to {
+        width: 200px;
+        height: 200px;
+        opacity: 0;
     }
 }

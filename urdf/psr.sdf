@@ -6,14 +6,14 @@
       <pose>0.1435 0 0 1.5708 0 -1.5708</pose>
 
         <inertial>
-            <mass>16.0</mass>
+            <mass>6.0</mass>
             <inertia>
-            <ixx>4.2</ixx>
+            <ixx>2.2</ixx>
             <ixy>0</ixy>
             <ixz>0</ixz>
             <iyy>0.2</iyy>
             <iyz>0</iyz>
-            <izz>4.24</izz>
+            <izz>2.24</izz>
             </inertia>
         </inertial>
       <!-- Visual representation using your DAE file -->
@@ -42,8 +42,8 @@
           </contact>
           <friction>
             <ode>
-              <mu>0.8</mu>
-              <mu2>0.8</mu2>
+              <mu>0.1</mu>
+              <mu2>0.1</mu2>
             </ode>
           </friction>
         </surface>
