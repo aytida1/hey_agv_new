@@ -264,7 +264,7 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 For questions, issues, or contributions:
 
 - **GitHub Issues**: [Create an issue](https://github.com/aytida1/hey_agv_new/issues)
-- **Documentation**: Check the [ROS 2 documentation](https://docs.ros.org/en/humble/)
+- **Documentation**: Check the [ROS 2 documentation](https://docs.ros.org/en/jazzy/)
 - **Community**: Join the [ROS Discourse](https://discourse.ros.org/)
 
 ---
